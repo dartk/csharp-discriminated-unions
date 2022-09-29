@@ -1,0 +1,177 @@
+#nullable enable
+using CSharpDiscriminatedUnions;
+using System;
+
+
+{{ if TypeInfo.Namespace }}namespace {{ TypeInfo.Namespace }} { {{~ end }}
+
+
+{{ TypeInfo.Keywords }} {{ TypeInfo.NameWithParameters }} {
+    
+    public enum Enum {
+        {{- for unionCase in TypeInfo.Cases }}
+        {{ unionCase.Name }},
+        {{- end }}
+    } 
+
+    {{~ for unionCase in TypeInfo.Cases }}
+    public static partial {{ TypeInfo.NameWithParameters }} {{ unionCase.Name }}({{ unionCase.InputParameters }}) {
+        return new {{ TypeInfo.NameWithParameters }}({{ unionCase.ConstructorParameters }});
+    }
+    {{ end }}
+    
+    private {{ TypeInfo.Name }}({{ TypeInfo.InputParameters }}) {
+        this.Case = Case;
+        {{- for parameter in TypeInfo.Parameters }}
+        this.{{ parameter.FieldName }} = {{ parameter.FieldName }};
+        {{- end }}
+    }
+    
+    
+    public Enum Case { get; }
+    {{- for parameter in TypeInfo.Parameters }}
+    private readonly {{ parameter.Type }} {{ parameter.FieldName }};
+    {{- end }}
+    
+    {{~ for _case in TypeInfo.Cases }}
+    public bool Is{{ _case.Name }} => this.Case == Enum.{{ _case.Name }};
+    {{- end }}
+    
+    {{~ for _case in TypeInfo.Cases }}
+    {{- if (array.size _case.Parameters) > 0 }}
+    public bool TryGet{{ _case.Name }}({{ _case.OutputParameters }}) {
+        {{- for parameter in _case.Parameters }}
+        {{ parameter.Name }} = this.{{ parameter.FieldName }};
+        {{- end }}
+        return this.Is{{ _case.Name }};
+    }
+    {{- end }}
+    {{ end }}
+    
+    {{- for _case in TypeInfo.Cases }}
+    {{- case array.size _case.Parameters }}
+    {{- when 0 }}
+    {{- when 1 }}
+    {{- parameter = array.first _case.Parameters }}
+    public {{ parameter.Type }} Get{{ _case.Name }}() {
+        if (!this.Is{{ _case.Name }}) {
+            throw new InvalidOperationException($"Cannot get '{{ _case.Name }}' for '{this.Case}'.");
+        }
+        
+        return this.{{ parameter.FieldName }};
+    }
+    {{- else }}
+    public ({{ _case.InputParameters }}) Get{{ _case.Name }}() {
+        if (!this.Is{{ _case.Name }}) {
+            throw new InvalidOperationException($"Cannot get '{{ _case.Name }}' for '{this.Case}'.");
+        }
+        
+        return default!;
+    }
+    {{- end }}
+    {{ end }}
+
+    public TResult Switch<TResult>(
+        {{-
+        count = array.size TypeInfo.Cases
+        for i in 0..(count - 1)
+            separator = i != count - 1 ? "," : ""
+            _case = TypeInfo.Cases[i]
+        }}
+        {{- if (array.size _case.Parameters) > 0 }}
+        Func<{{ _case.ParameterTypes }}, TResult> {{ _case.Name }}{{ separator }}
+        {{- else }}
+        Func<TResult> {{ _case.Name }}{{ separator }}
+        {{- end }}
+        {{- end }}
+    ) {
+        switch (this.Case) {
+            {{- for _case in TypeInfo.Cases }}
+            case Enum.{{ _case.Name }}: return {{ _case.Name }}({{ _case.ParameterFields }});
+            {{- end }}
+            default: throw new ArgumentOutOfRangeException($"Invalid union case '{this.Case}'");
+        }
+    }
+    
+    public TResult Switch<TResult>(
+        Func<{{ TypeInfo.NameWithParameters }}, TResult> Default,
+        {{-
+        count = array.size TypeInfo.Cases
+        for i in 0..(count - 1)
+            separator = i != count - 1 ? "," : ""
+            _case = TypeInfo.Cases[i]
+        }}
+        {{- if (array.size _case.Parameters) > 0 }}
+        Func<{{ _case.ParameterTypes }}, TResult>? {{ _case.Name }} = null{{ separator }}
+        {{- else }}
+        Func<TResult>? {{ _case.Name }} = null{{ separator }}
+        {{- end }}
+        {{- end }}
+    ) {
+        switch (this.Case) {
+            {{- for _case in TypeInfo.Cases }}
+            case Enum.{{ _case.Name }}: return {{ _case.Name }} != null ? {{ _case.Name }}({{ _case.ParameterFields }}) : Default(this);
+            {{- end }}
+            default: throw new ArgumentOutOfRangeException($"Invalid union case '{this.Case}'");
+        }
+    }
+    
+
+    public void Do(
+        {{-
+        count = array.size TypeInfo.Cases
+        for i in 0..(count - 1)
+            separator = i != count - 1 ? "," : ""
+            _case = TypeInfo.Cases[i]
+        }}
+        {{- if (array.size _case.Parameters) > 0 }}
+        Action<{{ _case.ParameterTypes }}> {{ _case.Name }}{{ separator }}
+        {{- else }}
+        Action {{ _case.Name }}{{ separator }}
+        {{- end }}
+        {{- end }}
+    ) {
+        switch (this.Case) {
+            {{- for _case in TypeInfo.Cases }}
+            case Enum.{{ _case.Name }}: {{ _case.Name }}({{ _case.ParameterFields }}); break;
+            {{- end }}
+            default: throw new ArgumentOutOfRangeException($"Invalid union case '{this.Case}'");
+        }
+    }
+    
+
+    public void Do(
+        Action<{{ TypeInfo.NameWithParameters }}> Default,
+        {{-
+        count = array.size TypeInfo.Cases
+        for i in 0..(count - 1)
+            separator = i != count - 1 ? "," : ""
+            _case = TypeInfo.Cases[i]
+        }}
+        {{- if (array.size _case.Parameters) > 0 }}
+        Action<{{ _case.ParameterTypes }}>? {{ _case.Name }} = null{{ separator }}
+        {{- else }}
+        Action? {{ _case.Name }} = null{{ separator }}
+        {{- end }}
+        {{- end }}
+    ) {
+        switch (this.Case) {
+            {{- for _case in TypeInfo.Cases }}
+            case Enum.{{ _case.Name }}: if ({{ _case.Name }} != null) {{ _case.Name }}({{ _case.ParameterFields }}); else Default(this); break;
+            {{- end }}
+            default: throw new ArgumentOutOfRangeException($"Invalid union case '{this.Case}'");
+        }
+    }
+    
+    public override string ToString() {
+        switch (this.Case) {
+            {{- for _case in TypeInfo.Cases }}
+            case Enum.{{ _case.Name }}: return {{ _case.ToStringValue }};
+            {{- end }}
+            default: throw new ArgumentOutOfRangeException($"Invalid union case '{this.Case}'");
+        }
+    } 
+}
+
+
+{{ if TypeInfo.Namespace; "}"; end }}
