@@ -6,346 +6,317 @@ namespace CSharpDiscriminatedUnions.Tests;
 
 
 [DiscriminatedUnion]
-public partial struct Choice<T0, T1, T2> {
-    [Case] public static partial Choice<T0, T1, T2> Case0(T0 value);
-    [Case] public static partial Choice<T0, T1, T2> Case1(T1 value);
-    [Case] public static partial Choice<T0, T1, T2> Case2(T2 value);
+public readonly partial struct Union {
+
+    [Case]
+    public static partial Union Zero();
+
+
+    [Case]
+    public static partial Union One(int value);
+
+
+    [Case]
+    public static partial Union Two(int value0, int value1);
+
+
+    [Case]
+    public static partial Union Three(int value0, int value1, int value2);
+
 }
 
 
 [TestClass]
 public class Tests {
 
-    private const int IntValue = 12;
-    private const float FloatValue = 34f;
-    private const string StringValue = "Hello, World!";
-
-
-    private static ( Choice<int, float, string> case0,
-        Choice<int, float, string> case1,
-        Choice<int, float, string> case2
-        )
-        CreateUnions() {
+    private static (Union, Union, Union, Union) CreateUnions() {
         return (
-            Choice<int, float, string>.Case0(IntValue),
-            Choice<int, float, string>.Case1(FloatValue),
-            Choice<int, float, string>.Case2(StringValue)
+            Union.Zero(),
+            Union.One(10),
+            Union.Two(10, 20),
+            Union.Three(10, 20, 30)
         );
     }
 
 
     [TestMethod]
     public void CasePropertyValueTest() {
-        var (union0, union1, union2) = CreateUnions();
+        var (zero, one, two, three) = CreateUnions();
 
-        Assert.AreEqual(Choice<int, float, string>.Enum.Case0, union0.Case);
-        Assert.AreEqual(Choice<int, float, string>.Enum.Case1, union1.Case);
-        Assert.AreEqual(Choice<int, float, string>.Enum.Case2, union2.Case);
+        Assert.AreEqual(Union.Enum.Zero, zero.Case);
+        Assert.AreEqual(Union.Enum.One, one.Case);
+        Assert.AreEqual(Union.Enum.Two, two.Case);
+        Assert.AreEqual(Union.Enum.Three, three.Case);
     }
 
 
     [TestMethod]
     public void ToStringTest() {
-        var (union0, union1, union2) = CreateUnions();
+        var zero = Union.Zero();
+        var one = Union.One(10);
+        var two = Union.Two(10, 20);
+        var three = Union.Three(10, 20, 30);
 
-        Assert.AreEqual("Case0(12)", union0.ToString());
-        Assert.AreEqual("Case1(34)", union1.ToString());
-        Assert.AreEqual("Case2(Hello, World!)", union2.ToString());
+        Assert.AreEqual("Zero()", zero.ToString());
+        Assert.AreEqual("One(10)", one.ToString());
+        Assert.AreEqual("Two(10, 20)", two.ToString());
+        Assert.AreEqual("Three(10, 20, 30)", three.ToString());
     }
 
 
     [TestMethod]
     public void SwitchExhaustive() {
-        var (union0, union1, union2) = CreateUnions();
+        var (zero, one, two, three) = CreateUnions();
 
-        Assert.AreEqual<int>(
-            IntValue,
-            union0.Switch(
-                Case0: value => value,
-                Case1: value =>
-                    throw new InvalidOperationException(
-                        $"Unexpected Case1 Value {value}"),
-                Case2: value =>
-                    throw new InvalidOperationException(
-                        $"Unexpected Case2 Value {value}")
-            )
+        Assert.AreEqual(
+            (Union.Enum.Zero, 0, (0, 0), (0, 0, 0)),
+            Switch(zero)
         );
 
-        Assert.AreEqual<float>(
-            FloatValue,
-            union1.Switch(
-                Case0: value =>
-                    throw new InvalidOperationException(
-                        $"Unexpected Case0 Value {value}"),
-                Case1: value => value,
-                Case2: value =>
-                    throw new InvalidOperationException(
-                        $"Unexpected Case2 Value {value}")
-            )
+        Assert.AreEqual(
+            (Union.Enum.One, 10, (0, 0), (0, 0, 0)),
+            Switch(one)
         );
 
-        Assert.AreEqual<string>(
-            StringValue,
-            union2.Switch(
-                Case0: value =>
-                    throw new InvalidOperationException(
-                        $"Unexpected Case0 Value {value}"),
-                Case1: value =>
-                    throw new InvalidOperationException(
-                        $"Unexpected Case1 Value {value}"),
-                Case2: value => value
-            )
+        Assert.AreEqual(
+            (Union.Enum.Two, 0, (10, 20), (0, 0, 0)),
+            Switch(two)
         );
+
+        Assert.AreEqual(
+            (Union.Enum.Three, 0, (0, 0), (10, 20, 30)),
+            Switch(three)
+        );
+
+        static (Union.Enum, int, (int, int), (int, int, int)) Switch(
+            Union union
+        ) {
+            return union.Switch(
+                Zero: () => (Union.Enum.Zero, 0, (0, 0), (0, 0, 0)),
+                One: x => (Union.Enum.One, x, (0, 0), (0, 0, 0)),
+                Two: (x, y) => (Union.Enum.Two, 0, (x, y), (0, 0, 0)),
+                Three: (x, y, z) => (Union.Enum.Three, 0, (0, 0), (x, y, z))
+            );
+        }
     }
 
 
     [TestMethod]
     public void SwitchNonExhaustive() {
-        var (union0, union1, union2) = CreateUnions();
+        var (zero, one, two, three) = CreateUnions();
 
-        Assert.AreEqual<int>(
-            IntValue,
-            union0.Switch(
-                Case0: value => value,
-                Default: value =>
-                    throw new InvalidOperationException(
-                        $"Unexpected Default Value {value}")
-            )
-        );
+        Assert.AreEqual(0, zero.Switch(
+            Zero: () => 0,
+            Default: x => throw new InvalidOperationException(x.ToString())
+        ));
 
-        Assert.IsTrue(
-            (bool)union0.Switch(
-                Case1: value =>
-                    throw new InvalidOperationException(
-                        $"Unexpected Case1 Value {value}"),
-                Case2: value =>
-                    throw new InvalidOperationException(
-                        $"Unexpected Case2 Value {value}"),
-                Default: value => true
-            )
-        );
+        Assert.AreEqual(10, one.Switch(
+            One: x => x,
+            Default: x => throw new InvalidOperationException(x.ToString())
+        ));
 
-        Assert.AreEqual<float>(
-            FloatValue,
-            union1.Switch(
-                Case1: value => value,
-                Default: value =>
-                    throw new InvalidOperationException(
-                        $"Unexpected Default Value {value}")
-            )
-        );
+        Assert.AreEqual((10, 20), two.Switch(
+            Two: (x, y) => (x, y),
+            Default: x => throw new InvalidOperationException(x.ToString())
+        ));
 
-        Assert.IsTrue(
-            (bool)union1.Switch(
-                Case0: value =>
-                    throw new InvalidOperationException(
-                        $"Unexpected Case0 Value {value}"),
-                Case2: value =>
-                    throw new InvalidOperationException(
-                        $"Unexpected Case2 Value {value}"),
-                Default: value => true
-            )
-        );
-
-        Assert.AreEqual<string>(
-            StringValue,
-            union2.Switch(
-                Case2: value => value,
-                Default: value =>
-                    throw new InvalidOperationException(
-                        $"Unexpected Default Value {value}")
-            )
-        );
-
-        Assert.IsTrue(
-            (bool)union2.Switch(
-                Case0: value =>
-                    throw new InvalidOperationException(
-                        $"Unexpected Case0 Value {value}"),
-                Case1: value =>
-                    throw new InvalidOperationException(
-                        $"Unexpected Case1 Value {value}"),
-                Default: value => true
-            )
-        );
+        Assert.AreEqual((10, 20, 30), three.Switch(
+            Three: (x, y, z) => (x, y, z),
+            Default: x => throw new InvalidOperationException(x.ToString())
+        ));
     }
 
 
     [TestMethod]
     public void DoExhaustive() {
-        var (union0, union1, union2) = CreateUnions();
+        var (zero, one, two, three) = CreateUnions();
 
-        {
-            var result = 0;
-            union0.Do(
-                Case0: value => result = value,
-                Case1: value =>
-                    throw new InvalidOperationException(
-                        $"Unexpected Case1 Value {value}"),
-                Case2: value =>
-                    throw new InvalidOperationException(
-                        $"Unexpected Case2 Value {value}")
-            );
-            Assert.AreEqual(IntValue, result);
-        }
+        Assert.AreEqual(
+            (Union.Enum.Zero, 0, (0, 0), (0, 0, 0)),
+            Do(zero)
+        );
 
-        {
-            var result = 0f;
-            union1.Do(
-                Case0: value =>
-                    throw new InvalidOperationException(
-                        $"Unexpected Case0 Value {value}"),
-                Case1: value => result = value,
-                Case2: value =>
-                    throw new InvalidOperationException(
-                        $"Unexpected Case2 Value {value}")
-            );
-            Assert.AreEqual(FloatValue, result);
-        }
+        Assert.AreEqual(
+            (Union.Enum.One, 10, (0, 0), (0, 0, 0)),
+            Do(one)
+        );
 
-        {
-            var result = "";
-            union2.Do(
-                Case0: value =>
-                    throw new InvalidOperationException(
-                        $"Unexpected Case0 Value {value}"),
-                Case1: value =>
-                    throw new InvalidOperationException(
-                        $"Unexpected Case1 Value {value}"),
-                Case2: value => result = value
+        Assert.AreEqual(
+            (Union.Enum.Two, 0, (10, 20), (0, 0, 0)),
+            Do(two)
+        );
+
+        Assert.AreEqual(
+            (Union.Enum.Three, 0, (0, 0), (10, 20, 30)),
+            Do(three)
+        );
+
+        static (Union.Enum, int, (int, int), (int, int, int)) Do(
+            Union union
+        ) {
+            (Union.Enum, int, (int, int), (int, int, int)) result = default;
+            union.Do(
+                Zero: () => result = (Union.Enum.Zero, 0, (0, 0), (0, 0, 0)),
+                One: x => result = (Union.Enum.One, x, (0, 0), (0, 0, 0)),
+                Two: (x, y) => result = (Union.Enum.Two, 0, (x, y), (0, 0, 0)),
+                Three: (x, y, z) => result = (Union.Enum.Three, 0, (0, 0), (x, y, z))
             );
-            Assert.AreEqual(StringValue, result);
+
+            return result;
         }
     }
 
 
     [TestMethod]
     public void DoNonExhaustive() {
-        var (union0, union1, union2) = CreateUnions();
+        var (zero, one, two, three) = CreateUnions();
 
         {
             var result = 0;
-            union0.Do(
-                Case0: value => result = value,
-                Default: value =>
-                    throw new InvalidOperationException(
-                        $"Unexpected Default Value {value}")
+            zero.Do(
+                Zero: () => result = 1,
+                Default: x => throw new InvalidOperationException(x.ToString())
             );
-            Assert.AreEqual(IntValue, result);
-
-            var isDefault = false;
-            union0.Do(
-                Case1: value =>
-                    throw new InvalidOperationException(
-                        $"Unexpected Case1 Value {value}"),
-                Case2: value =>
-                    throw new InvalidOperationException(
-                        $"Unexpected Case2 Value {value}"),
-                Default: value => isDefault = true
-            );
-            Assert.IsTrue(isDefault);
+            
+            Assert.AreEqual(1, result);
         }
 
         {
-            var result = 0f;
-            union1.Do(
-                Case1: value => result = value,
-                Default: value =>
-                    throw new InvalidOperationException(
-                        $"Unexpected Default Value {value}")
+            var result = 0;
+            one.Do(
+                One: x => result = x,
+                Default: x => throw new InvalidOperationException(x.ToString())
             );
-            Assert.AreEqual(FloatValue, result);
-
-            var isDefault = false;
-            union1.Do(
-                Case0: value =>
-                    throw new InvalidOperationException(
-                        $"Unexpected Case0 Value {value}"),
-                Case2: value =>
-                    throw new InvalidOperationException(
-                        $"Unexpected Case2 Value {value}"),
-                Default: value => isDefault = true
-            );
-            Assert.IsTrue(isDefault);
+            
+            Assert.AreEqual(10, result);
         }
 
         {
-            var result = "";
-            union2.Do(
-                Case2: value => result = value,
-                Default: value =>
-                    throw new InvalidOperationException(
-                        $"Unexpected Default Value {value}")
+            var result = (0, 0);
+            two.Do(
+                Two: (x, y) => result = (x, y),
+                Default: x => throw new InvalidOperationException(x.ToString())
             );
-            Assert.AreEqual(StringValue, result);
+        
+            Assert.AreEqual((10, 20), result);
+        }
 
-            var isDefault = false;
-            union2.Do(
-                Case0: value =>
-                    throw new InvalidOperationException(
-                        $"Unexpected Case0 Value {value}"),
-                Case1: value =>
-                    throw new InvalidOperationException(
-                        $"Unexpected Case1 Value {value}"),
-                Default: value => isDefault = true
+        {
+            var result = (0, 0, 0);
+            three.Do(
+                Three: (x, y, z) => result = (x, y, z),
+                Default: x => throw new InvalidOperationException(x.ToString())
             );
-            Assert.IsTrue(isDefault);
+        
+            Assert.AreEqual((10, 20, 30), result);
         }
     }
 
 
     [TestMethod]
     public void GetCaseValue() {
-        var (union0, union1, union2) = CreateUnions();
+        var (zero, one, two, three) = CreateUnions();
+        
+        
+        Assert.ThrowsException<InvalidOperationException>(
+            () => zero.GetOne()
+        );
+        Assert.ThrowsException<InvalidOperationException>(
+            () => zero.GetTwo()
+        );
+        Assert.ThrowsException<InvalidOperationException>(
+            () => zero.GetThree()
+        );
 
-        Assert.AreEqual<int>(IntValue, union0.GetCase0());
-        Assert.ThrowsException<InvalidOperationException>(() =>
-            union0.GetCase1());
-        Assert.ThrowsException<InvalidOperationException>(() =>
-            union0.GetCase2());
+        
+        Assert.AreEqual(10, one.GetOne());
+        Assert.ThrowsException<InvalidOperationException>(
+            () => one.GetTwo()
+        );
+        Assert.ThrowsException<InvalidOperationException>(
+            () => one.GetThree()
+        );
 
-        Assert.ThrowsException<InvalidOperationException>(() =>
-            union1.GetCase0());
-        Assert.AreEqual<float>(FloatValue, union1.GetCase1());
-        Assert.ThrowsException<InvalidOperationException>(() =>
-            union1.GetCase2());
+        
+        Assert.ThrowsException<InvalidOperationException>(
+            () => two.GetOne()
+        );
+        Assert.AreEqual((10, 20), two.GetTwo());
+        Assert.ThrowsException<InvalidOperationException>(
+            () => one.GetThree()
+        );
+
+        
+        Assert.ThrowsException<InvalidOperationException>(
+            () => two.GetOne()
+        );
+        Assert.ThrowsException<InvalidOperationException>(
+            () => one.GetTwo()
+        );
+        Assert.AreEqual((10, 20, 30), three.GetThree());
+    }
 
 
-        Assert.ThrowsException<InvalidOperationException>(() =>
-            union2.GetCase0());
-        Assert.ThrowsException<InvalidOperationException>(() =>
-            union2.GetCase1());
-        Assert.AreEqual<string>(StringValue, union2.GetCase2());
+    [TestMethod]
+    public void IsCase() {
+        var (zero, one, two, three) = CreateUnions();
+        
+        Assert.IsTrue(zero.IsZero);
+        Assert.IsFalse(zero.IsOne);
+        Assert.IsFalse(zero.IsTwo);
+        Assert.IsFalse(zero.IsThree);
+        
+        Assert.IsFalse(one.IsZero);
+        Assert.IsTrue(one.IsOne);
+        Assert.IsFalse(one.IsTwo);
+        Assert.IsFalse(one.IsThree);
+        
+        Assert.IsFalse(two.IsZero);
+        Assert.IsFalse(two.IsOne);
+        Assert.IsTrue(two.IsTwo);
+        Assert.IsFalse(two.IsThree);
+        
+        Assert.IsFalse(three.IsZero);
+        Assert.IsFalse(three.IsOne);
+        Assert.IsFalse(three.IsTwo);
+        Assert.IsTrue(three.IsThree);
     }
 
 
     [TestMethod]
     public void TryGetCaseValue() {
-        var (union0, union1, union2) = CreateUnions();
+        var (zero, one, two, three) = CreateUnions();
 
         {
-            Assert.IsTrue((bool)union0.TryGetCase0(out var case0));
-            Assert.IsFalse((bool)union0.TryGetCase1(out _));
-            Assert.IsFalse((bool)union0.TryGetCase2(out _));
-
-            Assert.AreEqual<int>(IntValue, case0);
+            Assert.IsFalse(zero.TryGetOne(out _));
+            Assert.IsFalse(zero.TryGetTwo(out _, out _));
+            Assert.IsFalse(zero.TryGetThree(out _, out _, out _));
         }
 
         {
-            Assert.IsFalse((bool)union1.TryGetCase0(out _));
-            Assert.IsTrue((bool)union1.TryGetCase1(out var case1));
-            Assert.IsFalse((bool)union1.TryGetCase2(out _));
-
-            Assert.AreEqual<float>(FloatValue, case1);
+            Assert.IsTrue(one.TryGetOne(out var x));
+            Assert.IsFalse(one.TryGetTwo(out _, out _));
+            Assert.IsFalse(one.TryGetThree(out _, out _, out _));
+            
+            Assert.AreEqual(10, x);
         }
 
         {
-            Assert.IsFalse((bool)union2.TryGetCase0(out _));
-            Assert.IsFalse((bool)union2.TryGetCase1(out _));
-            Assert.IsTrue((bool)union2.TryGetCase2(out var case2));
-
-            Assert.AreEqual<string>(StringValue, case2);
+            Assert.IsFalse(two.TryGetOne(out _));
+            Assert.IsTrue(two.TryGetTwo(out var x, out var y));
+            Assert.IsFalse(two.TryGetThree(out _, out _, out _));
+            
+            Assert.AreEqual((10, 20), (x, y));
         }
+
+        {
+            Assert.IsFalse(three.TryGetOne(out _));
+            Assert.IsFalse(three.TryGetTwo(out _, out _));
+            Assert.IsTrue(three.TryGetThree(out var x, out var y, out var z));
+            
+            Assert.AreEqual((10, 20, 30), (x, y, z));
+        }
+
     }
 
 
