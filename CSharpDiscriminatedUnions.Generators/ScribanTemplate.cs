@@ -1,20 +1,15 @@
+using System.IO;
 using Scriban;
 
 
 namespace CSharpDiscriminatedUnions.Generators;
 
 
-public class ScribanTemplate
+public static class ScribanTemplate
 {
-
-    private const string TemplateFolder = "ScribanTemplates";
-
-
-    public static string Render(string file, object? model = null)
+    public static Template Parse(params string[] filePath)
     {
-        var templateSrc = ManifestResource.ReadAllText(TemplateFolder, file);
-        var template = Template.Parse(templateSrc, file);
-        return template.Render(model, memberInfo => memberInfo.Name);
+        var templateSrc = ManifestResource.ReadAllText(filePath);
+        return Template.Parse(templateSrc, Path.Combine(filePath));
     }
-
 }

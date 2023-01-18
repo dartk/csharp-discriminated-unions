@@ -1,163 +1,234 @@
-#nullable enable
-using CSharpDiscriminatedUnions;
-using System;
+{{- # Functions
 
-
-{{ if TypeInfo.Namespace }}namespace {{ TypeInfo.Namespace }} { {{~ end }}
-
-
-{{ TypeInfo.Keywords }} {{ TypeInfo.NameWithParameters }} {
+func string_format (format, args...)
+    if !args
+        ret format
+    end
     
+    $result = format
+
+    $size = array.size args
+    $i = -1
+    while ++$i < $size
+        $result = $result | string.replace ("{" + $i + "}") (args[$i])
+    end
+    
+    ret $result
+end
+
+
+func array_create (start_index, count)
+    if count < 0
+        ret null
+    end
+    
+    $result = []
+    if count == 0
+        ret $result
+    end
+    
+    for $i in 0..(count - 1)
+        $result[$i] = start_index + $i
+    end
+    
+    ret $result
+end
+
+-}}
+
+
+#nullable enable
+
+{{- # Namespaces }}
+
+{{- for $namespace in TypeInfo.NamespaceDeclarations }}
+    {{- if $namespace.Declaration }}
+namespace {{ $namespace.Declaration }} {
+    {{- end }}
+{{ $namespace.UsingStatements }}
+{{- end }}
+
+
+{{- # Types }}
+
+{{- for $typeDeclaration in TypeInfo.TypeDeclarations }}
+{{ $typeDeclaration.Declaration }} {
+{{- end }}
+
+
+{{- # Member declarations begin }}
+
     public enum Enum {
-        {{- for unionCase in TypeInfo.Cases }}
-        {{ unionCase.Name }},
+        {{- for $unionCase in TypeInfo.Cases }}
+        {{ $unionCase.Name }},
         {{- end }}
     } 
-
-    {{~ for unionCase in TypeInfo.Cases }}
-    public static partial {{ TypeInfo.NameWithParameters }} {{ unionCase.Name }}({{ unionCase.InputParameters }}) {
-        return new {{ TypeInfo.NameWithParameters }}({{ unionCase.ConstructorParameters }});
-    }
-    {{ end }}
     
-    private {{ TypeInfo.Name }}({{ TypeInfo.InputParameters }}) {
+    
+    {{- $constructorParameters = TypeInfo.Parameters |
+        array.each @(do
+            ret string_format "{0} {1} = default!" $0.Type $0.FieldName
+        end) |
+        array.join ", " 
+    }}
+        
+    private {{ TypeInfo.Name }}(Enum Case, {{ $constructorParameters }}) {
         this.Case = Case;
-        {{- for parameter in TypeInfo.Parameters }}
-        this.{{ parameter.FieldName }} = {{ parameter.FieldName }};
+        {{- for $parameter in TypeInfo.Parameters }}
+        this.{{ $parameter.FieldName }} = {{ $parameter.FieldName }};
         {{- end }}
     }
-    
     
     public Enum Case { get; }
-    {{- for parameter in TypeInfo.Parameters }}
-    private readonly {{ parameter.Type }} {{ parameter.FieldName }};
-    {{- end }}
+{{- for $parameter in TypeInfo.Parameters }}
+    private readonly {{ $parameter.Type }} {{ $parameter.FieldName }};
+{{- end }}
     
-    {{~ for _case in TypeInfo.Cases }}
-    public bool Is{{ _case.Name }} => this.Case == Enum.{{ _case.Name }};
-    {{- end }}
+{{- for $unionCase in TypeInfo.Cases }}
+    {{- $inputParameters = $unionCase.Parameters |
+        array.each @(do
+            ret string_format "{0} {1}" $0.Type $0.Name
+        end) |
+        array.join ", " }}
+    {{- $outputParameters = $unionCase.Parameters |
+        array.each @(do
+            ret string_format "out {0} {1}" $0.Type $0.Name
+        end) |
+        array.join ", " }}
+    {{- $constructorParameters = $unionCase.Parameters |
+        array.each @(do
+            ret string_format "{0}: {1}" $0.FieldName $0.Name
+        end) |
+        array.add ("Case: Enum." + $unionCase.Name) |
+        array.join ", " }}
     
-    {{~ for _case in TypeInfo.Cases }}
-    {{- if (array.size _case.Parameters) > 0 }}
-    public bool TryGet{{ _case.Name }}({{ _case.OutputParameters }}) {
-        {{- for parameter in _case.Parameters }}
-        {{ parameter.Name }} = this.{{ parameter.FieldName }};
-        {{- end }}
-        return this.Is{{ _case.Name }};
+    public static partial {{ TypeInfo.NameWithParameters }} {{ $unionCase.Name }}({{ $inputParameters }}) {
+        return new {{ TypeInfo.NameWithParameters }}({{ $constructorParameters }});
     }
-    {{- end }}
-    {{ end }}
     
-    {{- for _case in TypeInfo.Cases }}
-    {{- case array.size _case.Parameters }}
+    public bool Is{{ $unionCase.Name }} => this.Case == Enum.{{ $unionCase.Name }};
+    
+        {{- if (array.size $unionCase.Parameters) > 0 }}
+    
+    public bool TryGet{{ $unionCase.Name }}({{ $outputParameters }}) {
+        {{- for $parameter in $unionCase.Parameters }}
+        {{ $parameter.Name }} = this.{{ $parameter.FieldName }};
+        {{- end }}
+        return this.Is{{ $unionCase.Name }};
+    }
+        {{- end }}
+        
+    {{- case array.size $unionCase.Parameters }}
     {{- when 0 }}
     {{- when 1 }}
-    {{- parameter = array.first _case.Parameters }}
-    public {{ parameter.Type }} Get{{ _case.Name }}() {
-        if (!this.Is{{ _case.Name }}) {
-            throw new InvalidOperationException($"Cannot get '{{ _case.Name }}' for '{this.Case}'.");
+    {{- parameter = array.first $unionCase.Parameters }}
+    
+    public {{ parameter.Type }} Get{{ $unionCase.Name }}() {
+        if (!this.Is{{ $unionCase.Name }}) {
+            throw new InvalidOperationException($"Cannot get '{{ $unionCase.Name }}' for '{this.Case}'.");
         }
         
         return this.{{ parameter.FieldName }};
     }
     {{- else }}
-    public ({{ _case.InputParameters }}) Get{{ _case.Name }}() {
-        if (!this.Is{{ _case.Name }}) {
-            throw new InvalidOperationException($"Cannot get '{{ _case.Name }}' for '{this.Case}'.");
+    
+    public ({{ $inputParameters }}) Get{{ $unionCase.Name }}() {
+        if (!this.Is{{ $unionCase.Name }}) {
+            throw new InvalidOperationException($"Cannot get '{{ $unionCase.Name }}' for '{this.Case}'.");
         }
         
-        return ({{ _case.ParameterFields }});
+        return ({{ $unionCase.Parameters | array.map "FieldName" | array.join ", " }});
     }
     {{- end }}
-    {{ end }}
+{{- end }}
 
     public TResult Select<TResult>(
-        {{-
-        count = array.size TypeInfo.Cases
-        for i in 0..(count - 1)
-            separator = i != count - 1 ? "," : ""
-            _case = TypeInfo.Cases[i]
-        }}
-        {{- if (array.size _case.Parameters) > 0 }}
-        Func<{{ _case.ParameterTypes }}, TResult> {{ _case.Name }}{{ separator }}
-        {{- else }}
-        Func<TResult> {{ _case.Name }}{{ separator }}
-        {{- end }}
-        {{- end }}
+    {{-
+        TypeInfo.Cases |
+        array.each @(do
+            if (array.size $0.Parameters) > 0
+                $parameterTypes = $0.Parameters | array.map "Type" | array.join ", "
+                ret string_format "Func<{0}, TResult> {1}" $parameterTypes $0.Name
+            else
+                ret "Func<TResult> " + $0.Name
+            end
+        end) |
+        array.join ", "
+    -}}
     ) {
         switch (this.Case) {
             {{- for _case in TypeInfo.Cases }}
-            case Enum.{{ _case.Name }}: return {{ _case.Name }}({{ _case.ParameterFields }});
+            {{- $fieldNames = _case.Parameters | array.map "FieldName" | array.join ", " }}
+            case Enum.{{ _case.Name }}: return {{ _case.Name }}({{ $fieldNames }});
             {{- end }}
             default: throw new ArgumentOutOfRangeException($"Invalid union case '{this.Case}'");
         }
     }
-    
-    public TResult Select<TResult>(
-        Func<{{ TypeInfo.NameWithParameters }}, TResult> Default,
-        {{-
-        count = array.size TypeInfo.Cases
-        for i in 0..(count - 1)
-            separator = i != count - 1 ? "," : ""
-            _case = TypeInfo.Cases[i]
-        }}
-        {{- if (array.size _case.Parameters) > 0 }}
-        Func<{{ _case.ParameterTypes }}, TResult>? {{ _case.Name }} = null{{ separator }}
-        {{- else }}
-        Func<TResult>? {{ _case.Name }} = null{{ separator }}
-        {{- end }}
-        {{- end }}
+
+    public TResult Select<TResult>(Func<{{ TypeInfo.NameWithParameters }}, TResult> Default,
+    {{-
+        TypeInfo.Cases |
+        array.each @(do
+            if (array.size $0.Parameters) > 0
+                $parameterTypes = $0.Parameters | array.map "Type" | array.join ", "
+                ret string_format "Func<{0}, TResult>? {1} = null" $parameterTypes $0.Name
+            else
+                ret string_format "Func<TResult>? {0} = null" $0.Name
+            end
+        end) |
+        array.join ", "
+    -}}
     ) {
         switch (this.Case) {
             {{- for _case in TypeInfo.Cases }}
-            case Enum.{{ _case.Name }}: return {{ _case.Name }} != null ? {{ _case.Name }}({{ _case.ParameterFields }}) : Default(this);
+            {{- $fieldNames = _case.Parameters | array.map "FieldName" | array.join ", " }}
+            case Enum.{{ _case.Name }}: return {{ _case.Name }} != null ? {{ _case.Name }}({{ $fieldNames }}) : Default(this);
             {{- end }}
             default: throw new ArgumentOutOfRangeException($"Invalid union case '{this.Case}'");
         }
     }
-    
 
     public void ForEach(
-        {{-
-        count = array.size TypeInfo.Cases
-        for i in 0..(count - 1)
-            separator = i != count - 1 ? "," : ""
-            _case = TypeInfo.Cases[i]
-        }}
-        {{- if (array.size _case.Parameters) > 0 }}
-        Action<{{ _case.ParameterTypes }}> {{ _case.Name }}{{ separator }}
-        {{- else }}
-        Action {{ _case.Name }}{{ separator }}
-        {{- end }}
-        {{- end }}
+    {{-
+        TypeInfo.Cases |
+        array.each @(do
+            if (array.size $0.Parameters) > 0
+                $parameterTypes = $0.Parameters | array.map "Type" | array.join ", "
+                ret string_format "Action<{0}> {1}" $parameterTypes $0.Name
+            else
+                ret "Action " + $0.Name
+            end
+        end) |
+        array.join ", "
+    -}}
     ) {
         switch (this.Case) {
             {{- for _case in TypeInfo.Cases }}
-            case Enum.{{ _case.Name }}: {{ _case.Name }}({{ _case.ParameterFields }}); break;
+            {{- $fieldNames = _case.Parameters | array.map "FieldName" | array.join ", " }}
+            case Enum.{{ _case.Name }}: {{ _case.Name }}({{ $fieldNames }}); break;
             {{- end }}
             default: throw new ArgumentOutOfRangeException($"Invalid union case '{this.Case}'");
         }
     }
-    
 
-    public void ForEach(
-        Action<{{ TypeInfo.NameWithParameters }}> Default,
-        {{-
-        count = array.size TypeInfo.Cases
-        for i in 0..(count - 1)
-            separator = i != count - 1 ? "," : ""
-            _case = TypeInfo.Cases[i]
-        }}
-        {{- if (array.size _case.Parameters) > 0 }}
-        Action<{{ _case.ParameterTypes }}>? {{ _case.Name }} = null{{ separator }}
-        {{- else }}
-        Action? {{ _case.Name }} = null{{ separator }}
-        {{- end }}
-        {{- end }}
+    public void ForEach(Action<{{ TypeInfo.NameWithParameters }}> Default,
+    {{-
+        TypeInfo.Cases |
+        array.each @(do
+            if (array.size $0.Parameters) > 0
+                $parameterTypes = $0.Parameters | array.map "Type" | array.join ", "
+                ret string_format "Action<{0}>? {1} = null" $parameterTypes $0.Name
+            else
+                ret string_format "Action? {0} = null" $0.Name
+            end
+        end) |
+        array.join ", "
+    -}}
     ) {
         switch (this.Case) {
             {{- for _case in TypeInfo.Cases }}
-            case Enum.{{ _case.Name }}: if ({{ _case.Name }} != null) {{ _case.Name }}({{ _case.ParameterFields }}); else Default(this); break;
+            {{- $fieldNames = _case.Parameters | array.map "FieldName" | array.join ", " }}
+            case Enum.{{ _case.Name }}: if ({{ _case.Name }} != null) { {{ _case.Name }}({{ $fieldNames }}); } else { Default(this); } break;
             {{- end }}
             default: throw new ArgumentOutOfRangeException($"Invalid union case '{this.Case}'");
         }
@@ -166,12 +237,33 @@ using System;
     public override string ToString() {
         switch (this.Case) {
             {{- for _case in TypeInfo.Cases }}
-            case Enum.{{ _case.Name }}: return {{ _case.ToStringValue }};
+            case Enum.{{ _case.Name }}: return $"{{ _case.Name }}({{
+                _case.Parameters |
+                array.each @(do
+                    ret string_format "{{0}}" $0.FieldName
+                end) |
+                array.join ", "
+            }})";
             {{- end }}
             default: throw new ArgumentOutOfRangeException($"Invalid union case '{this.Case}'");
         }
     } 
+
+{{- # Member declarations end }}
+
+
+{{- # Braces for type declarations }}
+{{- for $type in TypeInfo.TypeDeclarations }}
 }
+{{- end }}
 
 
-{{ if TypeInfo.Namespace; "}"; end }}
+{{- # Braces for namespace declarations }}
+{{- for $namespace in TypeInfo.NamespaceDeclarations }}
+    {{- if $namespace.Declaration }}
+}
+    {{- end }}
+{{- end }}
+
+
+
