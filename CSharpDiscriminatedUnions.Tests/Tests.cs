@@ -6,30 +6,20 @@ namespace CSharpDiscriminatedUnions.Tests;
 
 
 [DiscriminatedUnion]
-public readonly partial struct Union {
-
-    [Case]
-    public static partial Union Zero();
-
-
-    [Case]
-    public static partial Union One(int value);
-
-
-    [Case]
-    public static partial Union Two(int value0, int value1);
-
-
-    [Case]
-    public static partial Union Three(int value0, int value1, int value2);
-
+public readonly partial struct Union
+{
+    [Case] public static partial Union Zero();
+    [Case] public static partial Union One(int value);
+    [Case] public static partial Union Two(int value0, int value1);
+    [Case] public static partial Union Three(int value0, int value1, int value2);
 }
 
 
 [TestClass]
-public class Tests {
-
-    private static (Union, Union, Union, Union) CreateUnions() {
+public class Tests
+{
+    private static (Union, Union, Union, Union) CreateUnions()
+    {
         return (
             Union.Zero(),
             Union.One(10),
@@ -40,7 +30,8 @@ public class Tests {
 
 
     [TestMethod]
-    public void CasePropertyValueTest() {
+    public void CasePropertyValueTest()
+    {
         var (zero, one, two, three) = CreateUnions();
 
         Assert.AreEqual(Union.Enum.Zero, zero.Case);
@@ -51,7 +42,8 @@ public class Tests {
 
 
     [TestMethod]
-    public void ToStringTest() {
+    public void ToStringTest()
+    {
         var zero = Union.Zero();
         var one = Union.One(10);
         var two = Union.Two(10, 20);
@@ -65,7 +57,8 @@ public class Tests {
 
 
     [TestMethod]
-    public void SwitchExhaustive() {
+    public void SwitchExhaustive()
+    {
         var (zero, one, two, three) = CreateUnions();
 
         Assert.AreEqual(
@@ -90,7 +83,8 @@ public class Tests {
 
         static (Union.Enum, int, (int, int), (int, int, int)) Switch(
             Union union
-        ) {
+        )
+        {
             return union.Switch(
                 Zero: () => (Union.Enum.Zero, 0, (0, 0), (0, 0, 0)),
                 One: x => (Union.Enum.One, x, (0, 0), (0, 0, 0)),
@@ -102,7 +96,8 @@ public class Tests {
 
 
     [TestMethod]
-    public void SwitchNonExhaustive() {
+    public void SwitchNonExhaustive()
+    {
         var (zero, one, two, three) = CreateUnions();
 
         Assert.AreEqual(0, zero.Switch(
@@ -128,7 +123,8 @@ public class Tests {
 
 
     [TestMethod]
-    public void DoExhaustive() {
+    public void DoExhaustive()
+    {
         var (zero, one, two, three) = CreateUnions();
 
         Assert.AreEqual(
@@ -153,7 +149,8 @@ public class Tests {
 
         static (Union.Enum, int, (int, int), (int, int, int)) Do(
             Union union
-        ) {
+        )
+        {
             (Union.Enum, int, (int, int), (int, int, int)) result = default;
             union.Do(
                 Zero: () => result = (Union.Enum.Zero, 0, (0, 0), (0, 0, 0)),
@@ -168,7 +165,8 @@ public class Tests {
 
 
     [TestMethod]
-    public void DoNonExhaustive() {
+    public void DoNonExhaustive()
+    {
         var (zero, one, two, three) = CreateUnions();
 
         {
@@ -177,7 +175,7 @@ public class Tests {
                 Zero: () => result = 1,
                 Default: x => throw new InvalidOperationException(x.ToString())
             );
-            
+
             Assert.AreEqual(1, result);
         }
 
@@ -187,7 +185,7 @@ public class Tests {
                 One: x => result = x,
                 Default: x => throw new InvalidOperationException(x.ToString())
             );
-            
+
             Assert.AreEqual(10, result);
         }
 
@@ -197,7 +195,7 @@ public class Tests {
                 Two: (x, y) => result = (x, y),
                 Default: x => throw new InvalidOperationException(x.ToString())
             );
-        
+
             Assert.AreEqual((10, 20), result);
         }
 
@@ -207,17 +205,18 @@ public class Tests {
                 Three: (x, y, z) => result = (x, y, z),
                 Default: x => throw new InvalidOperationException(x.ToString())
             );
-        
+
             Assert.AreEqual((10, 20, 30), result);
         }
     }
 
 
     [TestMethod]
-    public void GetCaseValue() {
+    public void GetCaseValue()
+    {
         var (zero, one, two, three) = CreateUnions();
-        
-        
+
+
         Assert.ThrowsException<InvalidOperationException>(
             () => zero.GetOne()
         );
@@ -228,7 +227,7 @@ public class Tests {
             () => zero.GetThree()
         );
 
-        
+
         Assert.AreEqual(10, one.GetOne());
         Assert.ThrowsException<InvalidOperationException>(
             () => one.GetTwo()
@@ -237,7 +236,7 @@ public class Tests {
             () => one.GetThree()
         );
 
-        
+
         Assert.ThrowsException<InvalidOperationException>(
             () => two.GetOne()
         );
@@ -246,7 +245,7 @@ public class Tests {
             () => one.GetThree()
         );
 
-        
+
         Assert.ThrowsException<InvalidOperationException>(
             () => two.GetOne()
         );
@@ -258,24 +257,25 @@ public class Tests {
 
 
     [TestMethod]
-    public void IsCase() {
+    public void IsCase()
+    {
         var (zero, one, two, three) = CreateUnions();
-        
+
         Assert.IsTrue(zero.IsZero);
         Assert.IsFalse(zero.IsOne);
         Assert.IsFalse(zero.IsTwo);
         Assert.IsFalse(zero.IsThree);
-        
+
         Assert.IsFalse(one.IsZero);
         Assert.IsTrue(one.IsOne);
         Assert.IsFalse(one.IsTwo);
         Assert.IsFalse(one.IsThree);
-        
+
         Assert.IsFalse(two.IsZero);
         Assert.IsFalse(two.IsOne);
         Assert.IsTrue(two.IsTwo);
         Assert.IsFalse(two.IsThree);
-        
+
         Assert.IsFalse(three.IsZero);
         Assert.IsFalse(three.IsOne);
         Assert.IsFalse(three.IsTwo);
@@ -284,7 +284,8 @@ public class Tests {
 
 
     [TestMethod]
-    public void TryGetCaseValue() {
+    public void TryGetCaseValue()
+    {
         var (zero, one, two, three) = CreateUnions();
 
         {
@@ -297,7 +298,7 @@ public class Tests {
             Assert.IsTrue(one.TryGetOne(out var x));
             Assert.IsFalse(one.TryGetTwo(out _, out _));
             Assert.IsFalse(one.TryGetThree(out _, out _, out _));
-            
+
             Assert.AreEqual(10, x);
         }
 
@@ -305,7 +306,7 @@ public class Tests {
             Assert.IsFalse(two.TryGetOne(out _));
             Assert.IsTrue(two.TryGetTwo(out var x, out var y));
             Assert.IsFalse(two.TryGetThree(out _, out _, out _));
-            
+
             Assert.AreEqual((10, 20), (x, y));
         }
 
@@ -313,11 +314,8 @@ public class Tests {
             Assert.IsFalse(three.TryGetOne(out _));
             Assert.IsFalse(three.TryGetTwo(out _, out _));
             Assert.IsTrue(three.TryGetThree(out var x, out var y, out var z));
-            
+
             Assert.AreEqual((10, 20, 30), (x, y, z));
         }
-
     }
-
-
 }

@@ -4,5 +4,6 @@
 namespace CSharpDiscriminatedUnions;
 
 
-public class DiscriminatedUnionAttribute : Attribute {
+public class DiscriminatedUnionAttribute : Attribute
+{
 }

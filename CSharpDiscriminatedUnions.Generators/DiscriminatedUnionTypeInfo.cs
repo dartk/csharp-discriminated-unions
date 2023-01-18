@@ -15,7 +15,8 @@ internal record DiscriminatedUnionTypeInfo(
     string NameWithParameters,
     string Keywords,
     ImmutableArray<UnionCaseInfo> Cases
-) {
+)
+{
 
     public IEnumerable<UnionCaseParameterInfo> Parameters =>
         this.Cases.SelectMany(@case => @case.Parameters);
@@ -34,7 +35,8 @@ internal record UnionCaseInfo(
     string Name,
     string Type,
     ImmutableArray<UnionCaseParameterInfo> Parameters
-) {
+)
+{
 
     public string InputParameters => string.Join(
         ", ", this.Parameters.Select(x => $"{x.Type} {x.Name}")
