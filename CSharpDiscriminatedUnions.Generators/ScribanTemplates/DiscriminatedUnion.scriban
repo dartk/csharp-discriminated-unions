@@ -71,7 +71,7 @@ using System;
     {{- end }}
     {{ end }}
 
-    public TResult Switch<TResult>(
+    public TResult Select<TResult>(
         {{-
         count = array.size TypeInfo.Cases
         for i in 0..(count - 1)
@@ -93,7 +93,7 @@ using System;
         }
     }
     
-    public TResult Switch<TResult>(
+    public TResult Select<TResult>(
         Func<{{ TypeInfo.NameWithParameters }}, TResult> Default,
         {{-
         count = array.size TypeInfo.Cases
@@ -117,7 +117,7 @@ using System;
     }
     
 
-    public void Do(
+    public void ForEach(
         {{-
         count = array.size TypeInfo.Cases
         for i in 0..(count - 1)
@@ -140,7 +140,7 @@ using System;
     }
     
 
-    public void Do(
+    public void ForEach(
         Action<{{ TypeInfo.NameWithParameters }}> Default,
         {{-
         count = array.size TypeInfo.Cases

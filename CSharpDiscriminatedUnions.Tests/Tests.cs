@@ -57,35 +57,35 @@ public class Tests
 
 
     [TestMethod]
-    public void SwitchExhaustive()
+    public void SelectExhaustive()
     {
         var (zero, one, two, three) = CreateUnions();
 
         Assert.AreEqual(
             (Union.Enum.Zero, 0, (0, 0), (0, 0, 0)),
-            Switch(zero)
+            Select(zero)
         );
 
         Assert.AreEqual(
             (Union.Enum.One, 10, (0, 0), (0, 0, 0)),
-            Switch(one)
+            Select(one)
         );
 
         Assert.AreEqual(
             (Union.Enum.Two, 0, (10, 20), (0, 0, 0)),
-            Switch(two)
+            Select(two)
         );
 
         Assert.AreEqual(
             (Union.Enum.Three, 0, (0, 0), (10, 20, 30)),
-            Switch(three)
+            Select(three)
         );
 
-        static (Union.Enum, int, (int, int), (int, int, int)) Switch(
+        static (Union.Enum, int, (int, int), (int, int, int)) Select(
             Union union
         )
         {
-            return union.Switch(
+            return union.Select(
                 Zero: () => (Union.Enum.Zero, 0, (0, 0), (0, 0, 0)),
                 One: x => (Union.Enum.One, x, (0, 0), (0, 0, 0)),
                 Two: (x, y) => (Union.Enum.Two, 0, (x, y), (0, 0, 0)),
@@ -96,26 +96,26 @@ public class Tests
 
 
     [TestMethod]
-    public void SwitchNonExhaustive()
+    public void SelectNonExhaustive()
     {
         var (zero, one, two, three) = CreateUnions();
 
-        Assert.AreEqual(0, zero.Switch(
+        Assert.AreEqual(0, zero.Select(
             Zero: () => 0,
             Default: x => throw new InvalidOperationException(x.ToString())
         ));
 
-        Assert.AreEqual(10, one.Switch(
+        Assert.AreEqual(10, one.Select(
             One: x => x,
             Default: x => throw new InvalidOperationException(x.ToString())
         ));
 
-        Assert.AreEqual((10, 20), two.Switch(
+        Assert.AreEqual((10, 20), two.Select(
             Two: (x, y) => (x, y),
             Default: x => throw new InvalidOperationException(x.ToString())
         ));
 
-        Assert.AreEqual((10, 20, 30), three.Switch(
+        Assert.AreEqual((10, 20, 30), three.Select(
             Three: (x, y, z) => (x, y, z),
             Default: x => throw new InvalidOperationException(x.ToString())
         ));
@@ -123,36 +123,36 @@ public class Tests
 
 
     [TestMethod]
-    public void DoExhaustive()
+    public void ForEachExhaustive()
     {
         var (zero, one, two, three) = CreateUnions();
 
         Assert.AreEqual(
             (Union.Enum.Zero, 0, (0, 0), (0, 0, 0)),
-            Do(zero)
+            ForEach(zero)
         );
 
         Assert.AreEqual(
             (Union.Enum.One, 10, (0, 0), (0, 0, 0)),
-            Do(one)
+            ForEach(one)
         );
 
         Assert.AreEqual(
             (Union.Enum.Two, 0, (10, 20), (0, 0, 0)),
-            Do(two)
+            ForEach(two)
         );
 
         Assert.AreEqual(
             (Union.Enum.Three, 0, (0, 0), (10, 20, 30)),
-            Do(three)
+            ForEach(three)
         );
 
-        static (Union.Enum, int, (int, int), (int, int, int)) Do(
+        static (Union.Enum, int, (int, int), (int, int, int)) ForEach(
             Union union
         )
         {
             (Union.Enum, int, (int, int), (int, int, int)) result = default;
-            union.Do(
+            union.ForEach(
                 Zero: () => result = (Union.Enum.Zero, 0, (0, 0), (0, 0, 0)),
                 One: x => result = (Union.Enum.One, x, (0, 0), (0, 0, 0)),
                 Two: (x, y) => result = (Union.Enum.Two, 0, (x, y), (0, 0, 0)),
@@ -165,13 +165,13 @@ public class Tests
 
 
     [TestMethod]
-    public void DoNonExhaustive()
+    public void ForEachNonExhaustive()
     {
         var (zero, one, two, three) = CreateUnions();
 
         {
             var result = 0;
-            zero.Do(
+            zero.ForEach(
                 Zero: () => result = 1,
                 Default: x => throw new InvalidOperationException(x.ToString())
             );
@@ -181,7 +181,7 @@ public class Tests
 
         {
             var result = 0;
-            one.Do(
+            one.ForEach(
                 One: x => result = x,
                 Default: x => throw new InvalidOperationException(x.ToString())
             );
@@ -191,7 +191,7 @@ public class Tests
 
         {
             var result = (0, 0);
-            two.Do(
+            two.ForEach(
                 Two: (x, y) => result = (x, y),
                 Default: x => throw new InvalidOperationException(x.ToString())
             );
@@ -201,7 +201,7 @@ public class Tests
 
         {
             var result = (0, 0, 0);
-            three.Do(
+            three.ForEach(
                 Three: (x, y, z) => result = (x, y, z),
                 Default: x => throw new InvalidOperationException(x.ToString())
             );
