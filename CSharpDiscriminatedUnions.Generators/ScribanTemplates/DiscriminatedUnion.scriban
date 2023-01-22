@@ -142,7 +142,7 @@ namespace {{ $namespace.Declaration }} {
     {{- end }}
 {{- end }}
 
-    public TResult Select<TResult>(
+    public TResult Switch<TResult>(
     {{-
         TypeInfo.Cases |
         array.each @(do
@@ -165,7 +165,7 @@ namespace {{ $namespace.Declaration }} {
         }
     }
 
-    public TResult Select<TResult>(Func<{{ TypeInfo.NameWithParameters }}, TResult> Default,
+    public TResult Switch<TResult>(Func<{{ TypeInfo.NameWithParameters }}, TResult> Default,
     {{-
         TypeInfo.Cases |
         array.each @(do
@@ -188,7 +188,7 @@ namespace {{ $namespace.Declaration }} {
         }
     }
 
-    public void ForEach(
+    public void Switch(
     {{-
         TypeInfo.Cases |
         array.each @(do
@@ -211,7 +211,7 @@ namespace {{ $namespace.Declaration }} {
         }
     }
 
-    public void ForEach(Action<{{ TypeInfo.NameWithParameters }}> Default,
+    public void Switch(Action<{{ TypeInfo.NameWithParameters }}> Default,
     {{-
         TypeInfo.Cases |
         array.each @(do

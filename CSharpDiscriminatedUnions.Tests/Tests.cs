@@ -85,7 +85,7 @@ public class Tests
             Union union
         )
         {
-            return union.Select(
+            return union.Switch(
                 Zero: () => (Union.Enum.Zero, 0, (0, 0), (0, 0, 0)),
                 One: x => (Union.Enum.One, x, (0, 0), (0, 0, 0)),
                 Two: (x, y) => (Union.Enum.Two, 0, (x, y), (0, 0, 0)),
@@ -100,22 +100,22 @@ public class Tests
     {
         var (zero, one, two, three) = CreateUnions();
 
-        Assert.AreEqual(0, zero.Select(
+        Assert.AreEqual(0, zero.Switch(
             Zero: () => 0,
             Default: x => throw new InvalidOperationException(x.ToString())
         ));
 
-        Assert.AreEqual(10, one.Select(
+        Assert.AreEqual(10, one.Switch(
             One: x => x,
             Default: x => throw new InvalidOperationException(x.ToString())
         ));
 
-        Assert.AreEqual((10, 20), two.Select(
+        Assert.AreEqual((10, 20), two.Switch(
             Two: (x, y) => (x, y),
             Default: x => throw new InvalidOperationException(x.ToString())
         ));
 
-        Assert.AreEqual((10, 20, 30), three.Select(
+        Assert.AreEqual((10, 20, 30), three.Switch(
             Three: (x, y, z) => (x, y, z),
             Default: x => throw new InvalidOperationException(x.ToString())
         ));
@@ -152,7 +152,7 @@ public class Tests
         )
         {
             (Union.Enum, int, (int, int), (int, int, int)) result = default;
-            union.ForEach(
+            union.Switch(
                 Zero: () => result = (Union.Enum.Zero, 0, (0, 0), (0, 0, 0)),
                 One: x => result = (Union.Enum.One, x, (0, 0), (0, 0, 0)),
                 Two: (x, y) => result = (Union.Enum.Two, 0, (x, y), (0, 0, 0)),
@@ -165,13 +165,13 @@ public class Tests
 
 
     [TestMethod]
-    public void ForEachNonExhaustive()
+    public void SwitchNonExhaustive()
     {
         var (zero, one, two, three) = CreateUnions();
 
         {
             var result = 0;
-            zero.ForEach(
+            zero.Switch(
                 Zero: () => result = 1,
                 Default: x => throw new InvalidOperationException(x.ToString())
             );
@@ -181,7 +181,7 @@ public class Tests
 
         {
             var result = 0;
-            one.ForEach(
+            one.Switch(
                 One: x => result = x,
                 Default: x => throw new InvalidOperationException(x.ToString())
             );
@@ -191,7 +191,7 @@ public class Tests
 
         {
             var result = (0, 0);
-            two.ForEach(
+            two.Switch(
                 Two: (x, y) => result = (x, y),
                 Default: x => throw new InvalidOperationException(x.ToString())
             );
@@ -201,7 +201,7 @@ public class Tests
 
         {
             var result = (0, 0, 0);
-            three.ForEach(
+            three.Switch(
                 Three: (x, y, z) => result = (x, y, z),
                 Default: x => throw new InvalidOperationException(x.ToString())
             );
