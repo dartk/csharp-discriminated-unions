@@ -1,9 +1,9 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using static CSharpDiscriminatedUnions.Tests.Examples.Result;
 
 
-namespace CSharpDiscriminatedUnions.Tests;
+namespace CSharpDiscriminatedUnions.Tests.Examples;
 
 
 [DiscriminatedUnion]
@@ -13,11 +13,11 @@ public partial record Result<TOk, TError>
     [Case] public static partial Result<TOk, TError> Error(TError error);
 
 
-    public static implicit operator Result<TOk, TError>(Result.OkStruct<TOk> ok) =>
+    public static implicit operator Result<TOk, TError>(OkStruct<TOk> ok) =>
         Ok(ok.Value);
 
 
-    public static implicit operator Result<TOk, TError>(Result.ErrorStruct<TError> error) =>
+    public static implicit operator Result<TOk, TError>(ErrorStruct<TError> error) =>
         Error(error.Value);
 }
 
@@ -35,7 +35,7 @@ public static class Result
 public static partial class ReadIntegerFromFile
 {
     [DiscriminatedUnion]
-    public partial record struct Error
+    public partial record Error
     {
         [Case] public static partial Error FileDoesNotExist(string fileName);
         [Case] public static partial Error FileIsLocked(string fileName);
@@ -49,22 +49,22 @@ public static partial class ReadIntegerFromFile
         {
             if (!File.Exists(fileName))
             {
-                return Result.Error(Error.FileDoesNotExist(fileName));
+                return Error(Error.FileDoesNotExist(fileName));
             }
 
             var text = File.ReadAllText(fileName);
             if (!int.TryParse(text, out var number))
             {
-                return Result.Error(Error.CannotParseString(text));
+                return Error(Error.CannotParseString(text));
             }
 
-            return Result.Ok(number);
+            return Ok(number);
         }
         catch (IOException ex)
         {
             if (ex.HResult == -2147024864)
             {
-                return Result.Error(Error.FileIsLocked(fileName));
+                return Error(Error.FileIsLocked(fileName));
             }
             
             throw;
@@ -74,22 +74,22 @@ public static partial class ReadIntegerFromFile
 
 
 [TestClass]
-public class Examples
+public class ResultTests
 {
     [TestMethod]
     public void Test()
     {
         File.WriteAllText("number.txt", "10");
-        Assert.AreEqual(Result.Ok(10), ReadIntegerFromFile.Execute("number.txt"));
+        Assert.AreEqual(Ok(10), ReadIntegerFromFile.Execute("number.txt"));
 
         Assert.AreEqual(
-            Result.Error(ReadIntegerFromFile.Error.FileDoesNotExist("does not exist.txt")),
+            Error(ReadIntegerFromFile.Error.FileDoesNotExist("does not exist.txt")),
             ReadIntegerFromFile.Execute("does not exist.txt"));
 
         using (File.CreateText("locked file.txt"))
         {
             Assert.AreEqual(
-                Result.Error(ReadIntegerFromFile.Error.FileIsLocked("locked file.txt")),
+                Error(ReadIntegerFromFile.Error.FileIsLocked("locked file.txt")),
                 ReadIntegerFromFile.Execute("locked file.txt"));
         }
     }

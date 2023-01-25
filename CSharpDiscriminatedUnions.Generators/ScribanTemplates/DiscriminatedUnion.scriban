@@ -125,7 +125,7 @@ namespace {{ $namespace.Declaration }} {
     
     public {{ parameter.Type }} Get{{ $unionCase.Name }}() {
         if (!this.Is{{ $unionCase.Name }}) {
-            throw new InvalidOperationException($"Cannot get '{{ $unionCase.Name }}' for '{this.Case}'.");
+            throw new System.InvalidOperationException($"Cannot get '{{ $unionCase.Name }}' for '{this.Case}'.");
         }
         
         return this.{{ parameter.FieldName }};
@@ -134,7 +134,7 @@ namespace {{ $namespace.Declaration }} {
     
     public ({{ $inputParameters }}) Get{{ $unionCase.Name }}() {
         if (!this.Is{{ $unionCase.Name }}) {
-            throw new InvalidOperationException($"Cannot get '{{ $unionCase.Name }}' for '{this.Case}'.");
+            throw new System.InvalidOperationException($"Cannot get '{{ $unionCase.Name }}' for '{this.Case}'.");
         }
         
         return ({{ $unionCase.Parameters | array.map "FieldName" | array.join ", " }});
@@ -148,9 +148,9 @@ namespace {{ $namespace.Declaration }} {
         array.each @(do
             if (array.size $0.Parameters) > 0
                 $parameterTypes = $0.Parameters | array.map "Type" | array.join ", "
-                ret string_format "Func<{0}, TResult> {1}" $parameterTypes $0.Name
+                ret string_format "System.Func<{0}, TResult> {1}" $parameterTypes $0.Name
             else
-                ret "Func<TResult> " + $0.Name
+                ret "System.Func<TResult> " + $0.Name
             end
         end) |
         array.join ", "
@@ -161,19 +161,19 @@ namespace {{ $namespace.Declaration }} {
             {{- $fieldNames = _case.Parameters | array.map "FieldName" | array.join ", " }}
             case Enum.{{ _case.Name }}: return {{ _case.Name }}({{ $fieldNames }});
             {{- end }}
-            default: throw new ArgumentOutOfRangeException($"Invalid union case '{this.Case}'");
+            default: throw new System.ArgumentOutOfRangeException($"Invalid union case '{this.Case}'");
         }
     }
 
-    public TResult Switch<TResult>(Func<{{ TypeInfo.NameWithParameters }}, TResult> Default,
+    public TResult Switch<TResult>(System.Func<{{ TypeInfo.NameWithParameters }}, TResult> Default,
     {{-
         TypeInfo.Cases |
         array.each @(do
             if (array.size $0.Parameters) > 0
                 $parameterTypes = $0.Parameters | array.map "Type" | array.join ", "
-                ret string_format "Func<{0}, TResult>? {1} = null" $parameterTypes $0.Name
+                ret string_format "System.Func<{0}, TResult>? {1} = null" $parameterTypes $0.Name
             else
-                ret string_format "Func<TResult>? {0} = null" $0.Name
+                ret string_format "System.Func<TResult>? {0} = null" $0.Name
             end
         end) |
         array.join ", "
@@ -184,7 +184,7 @@ namespace {{ $namespace.Declaration }} {
             {{- $fieldNames = _case.Parameters | array.map "FieldName" | array.join ", " }}
             case Enum.{{ _case.Name }}: return {{ _case.Name }} != null ? {{ _case.Name }}({{ $fieldNames }}) : Default(this);
             {{- end }}
-            default: throw new ArgumentOutOfRangeException($"Invalid union case '{this.Case}'");
+            default: throw new System.ArgumentOutOfRangeException($"Invalid union case '{this.Case}'");
         }
     }
 
@@ -194,9 +194,9 @@ namespace {{ $namespace.Declaration }} {
         array.each @(do
             if (array.size $0.Parameters) > 0
                 $parameterTypes = $0.Parameters | array.map "Type" | array.join ", "
-                ret string_format "Action<{0}> {1}" $parameterTypes $0.Name
+                ret string_format "System.Action<{0}> {1}" $parameterTypes $0.Name
             else
-                ret "Action " + $0.Name
+                ret "System.Action " + $0.Name
             end
         end) |
         array.join ", "
@@ -207,19 +207,19 @@ namespace {{ $namespace.Declaration }} {
             {{- $fieldNames = _case.Parameters | array.map "FieldName" | array.join ", " }}
             case Enum.{{ _case.Name }}: {{ _case.Name }}({{ $fieldNames }}); break;
             {{- end }}
-            default: throw new ArgumentOutOfRangeException($"Invalid union case '{this.Case}'");
+            default: throw new System.ArgumentOutOfRangeException($"Invalid union case '{this.Case}'");
         }
     }
 
-    public void Switch(Action<{{ TypeInfo.NameWithParameters }}> Default,
+    public void Switch(System.Action<{{ TypeInfo.NameWithParameters }}> Default,
     {{-
         TypeInfo.Cases |
         array.each @(do
             if (array.size $0.Parameters) > 0
                 $parameterTypes = $0.Parameters | array.map "Type" | array.join ", "
-                ret string_format "Action<{0}>? {1} = null" $parameterTypes $0.Name
+                ret string_format "System.Action<{0}>? {1} = null" $parameterTypes $0.Name
             else
-                ret string_format "Action? {0} = null" $0.Name
+                ret string_format "System.Action? {0} = null" $0.Name
             end
         end) |
         array.join ", "
@@ -230,7 +230,7 @@ namespace {{ $namespace.Declaration }} {
             {{- $fieldNames = _case.Parameters | array.map "FieldName" | array.join ", " }}
             case Enum.{{ _case.Name }}: if ({{ _case.Name }} != null) { {{ _case.Name }}({{ $fieldNames }}); } else { Default(this); } break;
             {{- end }}
-            default: throw new ArgumentOutOfRangeException($"Invalid union case '{this.Case}'");
+            default: throw new System.ArgumentOutOfRangeException($"Invalid union case '{this.Case}'");
         }
     }
     
@@ -245,7 +245,7 @@ namespace {{ $namespace.Declaration }} {
                 array.join ", "
             }})";
             {{- end }}
-            default: throw new ArgumentOutOfRangeException($"Invalid union case '{this.Case}'");
+            default: throw new System.ArgumentOutOfRangeException($"Invalid union case '{this.Case}'");
         }
     } 
 
