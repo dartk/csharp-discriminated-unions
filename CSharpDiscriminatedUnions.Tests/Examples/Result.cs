@@ -1,6 +1,9 @@
-﻿using System.IO;
+﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using static CSharpDiscriminatedUnions.Tests.Examples.Result;
+using Result = CSharpDiscriminatedUnions.Tests.Examples.Result
+    <CSharpDiscriminatedUnions.Tests.Examples.Input, string>;
+using static CSharpDiscriminatedUnions.Tests.Examples.Result
+    <CSharpDiscriminatedUnions.Tests.Examples.Input, string>;
 
 
 namespace CSharpDiscriminatedUnions.Tests.Examples;
@@ -13,84 +16,48 @@ public partial record Result<TOk, TError>
     [Case] public static partial Result<TOk, TError> Error(TError error);
 
 
-    public static implicit operator Result<TOk, TError>(OkStruct<TOk> ok) =>
-        Ok(ok.Value);
-
-
-    public static implicit operator Result<TOk, TError>(ErrorStruct<TError> error) =>
-        Error(error.Value);
-}
-
-
-public static class Result
-{
-    public static OkStruct<T> Ok<T>(T value) => new(value);
-    public static ErrorStruct<T> Error<T>(T value) => new(value);
-
-    public readonly record struct ErrorStruct<T>(T Value);
-    public readonly record struct OkStruct<T>(T Value);
-}
-
-
-public static partial class ReadIntegerFromFile
-{
-    [DiscriminatedUnion]
-    public partial record Error
+    public Result<TResult, TError> Bind<TResult>(Func<TOk, Result<TResult, TError>> bind)
     {
-        [Case] public static partial Error FileDoesNotExist(string fileName);
-        [Case] public static partial Error FileIsLocked(string fileName);
-        [Case] public static partial Error CannotParseString(string str);
-    }
-
-
-    public static Result<int, Error> Execute(string fileName)
-    {
-        try
-        {
-            if (!File.Exists(fileName))
-            {
-                return Error(Error.FileDoesNotExist(fileName));
-            }
-
-            var text = File.ReadAllText(fileName);
-            if (!int.TryParse(text, out var number))
-            {
-                return Error(Error.CannotParseString(text));
-            }
-
-            return Ok(number);
-        }
-        catch (IOException ex)
-        {
-            if (ex.HResult == -2147024864)
-            {
-                return Error(Error.FileIsLocked(fileName));
-            }
-            
-            throw;
-        }
+        return this.Switch(
+            Ok: bind,
+            Error: Result<TResult, TError>.Error);
     }
 }
+
+
+public record Input(string Email, string Name);
 
 
 [TestClass]
-public class ResultTests
+public class RailwayOrientedProgramming
 {
-    [TestMethod]
-    public void Test()
+    public static Result Validate(Input input)
     {
-        File.WriteAllText("number.txt", "10");
-        Assert.AreEqual(Ok(10), ReadIntegerFromFile.Execute("number.txt"));
+        return (input.Name == ""
+                ? Error("Name must not be blank")
+                : Ok(input))
+            .Bind(static input => input.Name.Length > 50
+                ? Error("Name must not be longer than 50 chars")
+                : Ok(input))
+            .Bind(static input => input.Email == ""
+                ? Error("Email must not be blank")
+                : Ok(input));
+    }
 
-        Assert.AreEqual(
-            Error(ReadIntegerFromFile.Error.FileDoesNotExist("does not exist.txt")),
-            ReadIntegerFromFile.Execute("does not exist.txt"));
 
-        using (File.CreateText("locked file.txt"))
-        {
-            Assert.AreEqual(
-                Error(ReadIntegerFromFile.Error.FileIsLocked("locked file.txt")),
-                ReadIntegerFromFile.Execute("locked file.txt"));
-        }
+    [TestMethod]
+    public void TestValidation()
+    {
+        var input = new Input(Name: "My name", Email: "myemail@mail.com");
+        Assert.AreEqual(Ok(input), Validate(input));
+        
+        Assert.AreEqual(Error("Name must not be blank"),
+            Validate(new Input(Name: "", Email: "")));
+
+        Assert.AreEqual(Error("Name must not be longer than 50 chars"),
+            Validate(new Input(Name: new string('~', 51), Email: "")));
+        
+        Assert.AreEqual(Error("Email must not be blank"),
+            Validate(new Input(Name: "My name", Email: "")));
     }
 }
