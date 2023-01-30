@@ -18,7 +18,8 @@ public record DiscriminatedUnionTypeInfo(
     string Name,
     string NameWithParameters,
     string UniqueName,
-    ImmutableArray<UnionCaseInfo> Cases)
+    ImmutableArray<UnionCaseInfo> Cases,
+    bool GenerateToString)
 {
     public IEnumerable<UnionCaseParameterInfo> Parameters =>
         this.Cases.SelectMany(@case => @case.Parameters);

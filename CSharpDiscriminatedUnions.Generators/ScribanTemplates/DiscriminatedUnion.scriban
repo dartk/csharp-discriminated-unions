@@ -234,6 +234,8 @@ namespace {{ $namespace.Declaration }} {
         }
     }
     
+    {{- if TypeInfo.GenerateToString }}
+    
     public override string ToString() {
         switch (this.Case) {
             {{- for _case in TypeInfo.Cases }}
@@ -248,6 +250,7 @@ namespace {{ $namespace.Declaration }} {
             default: throw new System.ArgumentOutOfRangeException($"Invalid union case '{this.Case}'");
         }
     } 
+    {{- end }}
 
 {{- # Member declarations end }}
 

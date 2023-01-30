@@ -48,6 +48,8 @@ public class NewDiscriminatedUnionGenerator : IncrementalGeneratorBase<Discrimin
             return null;
         }
 
+        var overridesToString = OverridesToString(typeSymbol);
+
         var (namespaces, types) = GetDeclarationInfo(typeSyntax);
         foreach (var @namespace in namespaces)
         {
@@ -60,7 +62,8 @@ public class NewDiscriminatedUnionGenerator : IncrementalGeneratorBase<Discrimin
             typeSymbol.Name,
             GetTypeNameWithParameters(typeSymbol),
             GetUniqueTypeName(typeSymbol),
-            cases
+            cases,
+            !overridesToString
         );
     }
 
@@ -83,6 +86,20 @@ public class NewDiscriminatedUnionGenerator : IncrementalGeneratorBase<Discrimin
                 generated
             );
         }
+    }
+
+
+    private static bool OverridesToString(ITypeSymbol typeSymbol)
+    {
+        var members = typeSymbol.GetMembers();
+        return members
+            .Any(x => x is IMethodSymbol
+            {
+                IsOverride: true,
+                IsImplicitlyDeclared: false,
+                Name: "ToString",
+                Parameters.IsEmpty: true
+            });
     }
 
 
