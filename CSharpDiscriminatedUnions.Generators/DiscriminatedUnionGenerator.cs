@@ -51,10 +51,6 @@ public class NewDiscriminatedUnionGenerator : IncrementalGeneratorBase<Discrimin
         var overridesToString = OverridesToString(typeSymbol);
 
         var (namespaces, types) = GetDeclarationInfo(typeSyntax);
-        foreach (var @namespace in namespaces)
-        {
-            Log(@namespace.Declaration);
-        }
 
         return new DiscriminatedUnionTypeInfo(
             namespaces,
@@ -246,12 +242,6 @@ public class NewDiscriminatedUnionGenerator : IncrementalGeneratorBase<Discrimin
         }
 
         return builder.ToString();
-    }
-
-
-    private static void Log(object? obj)
-    {
-        File.AppendAllText(@"C:\Users\user\Desktop\tmp\out.txt", obj + Environment.NewLine);
     }
 
 
