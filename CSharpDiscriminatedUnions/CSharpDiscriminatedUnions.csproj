@@ -2,7 +2,6 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
-        <RootNamespace>CSlns.DiscriminatedUnions</RootNamespace>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -10,8 +9,8 @@
         <PackageId>CSharpDiscriminatedUnions</PackageId>
         <Authors>Dmitry Artemkin</Authors>
         <Copyright>2022</Copyright>
-        <Version>1.4.0</Version>
-        <RepositoryUrl>https://github.com/dmitryartm/CSharpDiscriminatedUnions</RepositoryUrl>
+        <Version>0.1.0</Version>
+        <RepositoryUrl>https://github.com/dartk/CSharpDiscriminatedUnions</RepositoryUrl>
         <NoWarn>$(NoWarn);NU5128</NoWarn>
     </PropertyGroup>
 
