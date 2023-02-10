@@ -19,7 +19,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\CSharpDiscriminatedUnions.Generators\CSharpDiscriminatedUnions.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="False" />
+      <ProjectReference Include="..\CSharpDiscriminatedUnions\CSharpDiscriminatedUnions.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="False" />
       <ProjectReference Include="..\CSharpDiscriminatedUnions.Runtime\CSharpDiscriminatedUnions.Runtime.csproj" />
     </ItemGroup>
 

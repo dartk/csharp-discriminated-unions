@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.IO;
+﻿using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -10,14 +7,14 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 
-namespace CSharpDiscriminatedUnions.Generators;
+namespace CSharpDiscriminatedUnions;
 
 
 [Generator]
 public class NewDiscriminatedUnionGenerator : IncrementalGeneratorBase<DiscriminatedUnionTypeInfo>
 {
-    private const string DiscriminatedUnion = "DiscriminatedUnion";
-    private const string DiscriminatedUnionAttribute = "DiscriminatedUnionAttribute";
+    private const string DiscriminatedUnion = nameof(DiscriminatedUnion);
+    private const string DiscriminatedUnionAttribute = nameof(DiscriminatedUnionAttribute);
     private const string CaseAttributeClass = "CSharpDiscriminatedUnions.CaseAttribute";
 
 

@@ -5,7 +5,8 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
-namespace CSharpDiscriminatedUnions.Generators;
+
+namespace CSharpDiscriminatedUnions;
 
 
 public record TypeDeclarationInfo(string Declaration);

@@ -1,4 +1,4 @@
-﻿namespace CSharpDiscriminatedUnions.Generators;
+﻿namespace CSharpDiscriminatedUnions;
 
 
 internal static class Const

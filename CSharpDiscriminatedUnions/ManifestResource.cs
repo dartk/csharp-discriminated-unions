@@ -1,16 +1,15 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 
 
-namespace CSharpDiscriminatedUnions.Generators;
+namespace CSharpDiscriminatedUnions;
 
 
 public static class ManifestResource
 {
 
-    private const string AssemblyName = "CSharpDiscriminatedUnions.Generators";
+    private const string AssemblyName = "CSharpDiscriminatedUnions";
 
 
     public static string ReadAllText(params string[] path)

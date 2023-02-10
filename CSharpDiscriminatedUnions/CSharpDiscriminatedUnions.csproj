@@ -2,33 +2,62 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
+        <LangVersion>10</LangVersion>
+        <Nullable>enable</Nullable>
+        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+        <RootNamespace>CSharpDiscriminatedUnions</RootNamespace>
+        <NoWarn>$(NoWarn);RS1024</NoWarn>
     </PropertyGroup>
 
     <PropertyGroup>
-        <IsPackable>True</IsPackable>
-        <PackageId>CSharpDiscriminatedUnions</PackageId>
+        <PackageId>Dartk.CSharpDiscriminatedUnions</PackageId>
+        <Title>CSharpDiscriminatedUnions</Title>
+        <Description>Discriminated union generator for C#</Description>
         <Authors>Dmitry Artemkin</Authors>
-        <Copyright>2022</Copyright>
-        <Version>0.1.0</Version>
+        <Copyright>2023</Copyright>
+        <Version>0.1.0-alpha4</Version>
         <RepositoryUrl>https://github.com/dartk/CSharpDiscriminatedUnions</RepositoryUrl>
-        <NoWarn>$(NoWarn);NU5128</NoWarn>
+        <RepositoryType>git</RepositoryType>
+        <IncludeBuildOutput>false</IncludeBuildOutput>
     </PropertyGroup>
 
     <PropertyGroup>
-        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <IncludeBuildOutput>false</IncludeBuildOutput>
-        <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\CSharpDiscriminatedUnions.Runtime\CSharpDiscriminatedUnions.Runtime.csproj" />
-        <ProjectReference Include="..\CSharpDiscriminatedUnions.Generators\CSharpDiscriminatedUnions.Generators.csproj" />
+        <!-- Package the generator in the analyzer directory of the nuget package -->
+        <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+        <None Include="$(PkgScriban)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     </ItemGroup>
 
     <ItemGroup>
-        <None Include="$(OutputPath)\CSharpDiscriminatedUnions.Runtime.dll" Pack="true" PackagePath="lib/$(TargetFramework)" Visible="false" />
-        <None Include="$(OutputPath)\CSharpDiscriminatedUnions.Generators.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.0.1"
+                          PrivateAssets="all"/>
+        <PackageReference Include="Scriban" Version="5.5.0"
+                          GeneratePathProperty="true" PrivateAssets="all" />
     </ItemGroup>
-    
+
+    <ItemGroup>
+        <None Remove="ScribanTemplates\**" />
+        <EmbeddedResource Include="ScribanTemplates\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference
+                Include="..\CSharpDiscriminatedUnions.Runtime\CSharpDiscriminatedUnions.Runtime.csproj" />
+    </ItemGroup>
+
+    <PropertyGroup>
+        <GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>
+    </PropertyGroup>
+
+    <Target Name="GetDependencyTargetPaths">
+        <ItemGroup>
+            <TargetPathWithTargetPlatformMoniker
+                    Include="$(PKGScriban)\lib\netstandard2.0\Scriban.dll"
+                    IncludeRuntimeDependency="false" />
+        </ItemGroup>
+    </Target>
 
 </Project>

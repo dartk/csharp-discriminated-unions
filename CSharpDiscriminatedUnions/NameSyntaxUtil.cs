@@ -1,7 +1,7 @@
 ﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 
-namespace CSharpDiscriminatedUnions.Generators;
+namespace CSharpDiscriminatedUnions;
 
 
 internal static class NameSyntaxUtil

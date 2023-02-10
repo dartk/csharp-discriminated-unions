@@ -6,13 +6,13 @@ using System.Threading;
 using Microsoft.CodeAnalysis;
 
 
-namespace CSharpDiscriminatedUnions.Generators;
+namespace CSharpDiscriminatedUnions;
 
 
 public abstract class IncrementalGeneratorBase<T> : IIncrementalGenerator
 {
     private const string ScribanTemplatesFolderResource =
-        "CSharpDiscriminatedUnions.Generators.ScribanTemplates";
+        "CSharpDiscriminatedUnions.ScribanTemplates";
 
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
