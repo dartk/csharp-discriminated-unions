@@ -1,4 +1,4 @@
-﻿namespace CSharpDiscriminatedUnions;
+﻿namespace CSharp.DiscriminatedUnions;
 
 
 internal static class Const
@@ -7,5 +7,5 @@ internal static class Const
     public const string DiscriminatedUnionAttribute = "DiscriminatedUnionAttribute";
 
     public const string CaseAttributeClass =
-        "CSharpDiscriminatedUnions.CaseAttribute";
+        "CSharp.DiscriminatedUnions.CaseAttribute";
 }

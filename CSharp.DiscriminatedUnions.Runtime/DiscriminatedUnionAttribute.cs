@@ -1,7 +1,7 @@
 ﻿using System;
 
 
-namespace CSharpDiscriminatedUnions;
+namespace CSharp.DiscriminatedUnions;
 
 
 public class DiscriminatedUnionAttribute : Attribute

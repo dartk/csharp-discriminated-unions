@@ -3,13 +3,13 @@ using System.IO;
 using System.Reflection;
 
 
-namespace CSharpDiscriminatedUnions;
+namespace CSharp.DiscriminatedUnions;
 
 
 public static class ManifestResource
 {
 
-    private const string AssemblyName = "CSharpDiscriminatedUnions";
+    private const string AssemblyName = "CSharp.DiscriminatedUnions";
 
 
     public static string ReadAllText(params string[] path)

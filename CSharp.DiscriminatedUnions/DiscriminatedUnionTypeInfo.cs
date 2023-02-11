@@ -6,7 +6,7 @@ using System.Collections.Immutable;
 using System.Linq;
 
 
-namespace CSharpDiscriminatedUnions;
+namespace CSharp.DiscriminatedUnions;
 
 
 public record TypeDeclarationInfo(string Declaration);

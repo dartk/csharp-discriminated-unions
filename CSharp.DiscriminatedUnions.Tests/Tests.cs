@@ -1,4 +1,5 @@
 ﻿using System;
+using CSharp.DiscriminatedUnions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 

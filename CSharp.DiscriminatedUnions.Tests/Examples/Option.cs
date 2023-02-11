@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using CSharp.DiscriminatedUnions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using static CSharpDiscriminatedUnions.Tests.Examples.Option;
 

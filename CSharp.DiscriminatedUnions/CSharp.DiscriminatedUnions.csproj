@@ -5,18 +5,18 @@
         <LangVersion>10</LangVersion>
         <Nullable>enable</Nullable>
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-        <RootNamespace>CSharpDiscriminatedUnions</RootNamespace>
+        <RootNamespace>CSharp.DiscriminatedUnions</RootNamespace>
         <NoWarn>$(NoWarn);RS1024</NoWarn>
     </PropertyGroup>
 
     <PropertyGroup>
-        <PackageId>Dartk.CSharpDiscriminatedUnions</PackageId>
+        <PackageId>Dartk.CSharp.DiscriminatedUnions</PackageId>
         <Title>CSharpDiscriminatedUnions</Title>
         <Description>Discriminated union generator for C#</Description>
         <Authors>Dmitry Artemkin</Authors>
         <Copyright>2023</Copyright>
-        <Version>0.1.0-alpha4</Version>
-        <RepositoryUrl>https://github.com/dartk/CSharpDiscriminatedUnions</RepositoryUrl>
+        <Version>0.1.0-alpha6</Version>
+        <RepositoryUrl>https://github.com/dartk/csharp-discriminated-unions</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <IncludeBuildOutput>false</IncludeBuildOutput>
     </PropertyGroup>
@@ -32,10 +32,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.0.1"
-                          PrivateAssets="all"/>
-        <PackageReference Include="Scriban" Version="5.5.0"
-                          GeneratePathProperty="true" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.0.1" PrivateAssets="all" />
+        <PackageReference Include="Scriban" Version="5.5.0" GeneratePathProperty="true" PrivateAssets="all" />
     </ItemGroup>
 
     <ItemGroup>
@@ -44,8 +42,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference
-                Include="..\CSharpDiscriminatedUnions.Runtime\CSharpDiscriminatedUnions.Runtime.csproj" />
+        <ProjectReference Include="..\CSharp.DiscriminatedUnions.Runtime\CSharp.DiscriminatedUnions.Runtime.csproj" />
     </ItemGroup>
 
     <PropertyGroup>
@@ -54,9 +51,7 @@
 
     <Target Name="GetDependencyTargetPaths">
         <ItemGroup>
-            <TargetPathWithTargetPlatformMoniker
-                    Include="$(PKGScriban)\lib\netstandard2.0\Scriban.dll"
-                    IncludeRuntimeDependency="false" />
+            <TargetPathWithTargetPlatformMoniker Include="$(PKGScriban)\lib\netstandard2.0\Scriban.dll" IncludeRuntimeDependency="false" />
         </ItemGroup>
     </Target>
 

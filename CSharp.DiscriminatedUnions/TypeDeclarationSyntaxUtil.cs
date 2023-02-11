@@ -2,7 +2,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 
-namespace CSharpDiscriminatedUnions;
+namespace CSharp.DiscriminatedUnions;
 
 
 public static class TypeDeclarationSyntaxUtil

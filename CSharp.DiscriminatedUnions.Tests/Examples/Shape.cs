@@ -1,4 +1,5 @@
 ﻿using System;
+using CSharp.DiscriminatedUnions;
 
 
 namespace CSharpDiscriminatedUnions.Tests.Examples;

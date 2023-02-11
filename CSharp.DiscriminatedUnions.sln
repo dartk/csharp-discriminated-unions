@@ -1,10 +1,10 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSharpDiscriminatedUnions.Runtime", "CSharpDiscriminatedUnions.Runtime\CSharpDiscriminatedUnions.Runtime.csproj", "{4EE47900-640F-46A0-8ADD-B3652AC7E83D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSharp.DiscriminatedUnions.Runtime", "CSharp.DiscriminatedUnions.Runtime\CSharp.DiscriminatedUnions.Runtime.csproj", "{4EE47900-640F-46A0-8ADD-B3652AC7E83D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSharpDiscriminatedUnions", "CSharpDiscriminatedUnions\CSharpDiscriminatedUnions.csproj", "{F4A10CF5-E7FD-4E92-B1FF-D96EA1EE785B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSharp.DiscriminatedUnions", "CSharp.DiscriminatedUnions\CSharp.DiscriminatedUnions.csproj", "{F4A10CF5-E7FD-4E92-B1FF-D96EA1EE785B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSharpDiscriminatedUnions.Tests", "CSharpDiscriminatedUnions.Tests\CSharpDiscriminatedUnions.Tests.csproj", "{5654ACB0-FBD4-4A3C-855F-982E6E270DDC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSharp.DiscriminatedUnions.Tests", "CSharp.DiscriminatedUnions.Tests\CSharp.DiscriminatedUnions.Tests.csproj", "{5654ACB0-FBD4-4A3C-855F-982E6E270DDC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

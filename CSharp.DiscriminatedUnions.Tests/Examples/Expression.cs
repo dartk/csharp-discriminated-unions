@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using CSharp.DiscriminatedUnions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using static CSharpDiscriminatedUnions.Tests.Examples.Expression;
 

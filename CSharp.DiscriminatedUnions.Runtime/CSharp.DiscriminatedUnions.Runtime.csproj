@@ -3,17 +3,17 @@
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
         <LangVersion>10</LangVersion>
-        <RootNamespace>CSharpDiscriminatedUnions</RootNamespace>
+        <RootNamespace>CSharp.DiscriminatedUnions</RootNamespace>
     </PropertyGroup>
 
     <PropertyGroup>
-        <PackageId>Dartk.CSharpDiscriminatedUnions.Runtime</PackageId>
+        <PackageId>Dartk.CSharp.DiscriminatedUnions.Runtime</PackageId>
         <Title>CSharpDiscriminatedUnions.Runtime</Title>
         <Description>Runtime dependencies for a Discriminated union generator for C#</Description>
         <Authors>Dmitry Artemkin</Authors>
         <Copyright>2023</Copyright>
-        <Version>0.1.0-alpha1</Version>
-        <RepositoryUrl>https://github.com/dartk/CSharpDiscriminatedUnions</RepositoryUrl>
+        <Version>0.1.0-alpha3</Version>
+        <RepositoryUrl>https://github.com/dartk/csharp-discriminated-unions</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
     </PropertyGroup>
     

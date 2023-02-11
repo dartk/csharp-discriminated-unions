@@ -2,7 +2,7 @@ using System.IO;
 using Scriban;
 
 
-namespace CSharpDiscriminatedUnions;
+namespace CSharp.DiscriminatedUnions;
 
 
 public static class ScribanTemplate

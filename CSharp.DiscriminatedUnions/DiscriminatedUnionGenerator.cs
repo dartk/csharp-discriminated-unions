@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 
-namespace CSharpDiscriminatedUnions;
+namespace CSharp.DiscriminatedUnions;
 
 
 [Generator]
@@ -15,7 +15,7 @@ public class NewDiscriminatedUnionGenerator : IncrementalGeneratorBase<Discrimin
 {
     private const string DiscriminatedUnion = nameof(DiscriminatedUnion);
     private const string DiscriminatedUnionAttribute = nameof(DiscriminatedUnionAttribute);
-    private const string CaseAttributeClass = "CSharpDiscriminatedUnions.CaseAttribute";
+    private const string CaseAttributeClass = "CSharp.DiscriminatedUnions.CaseAttribute";
 
 
     protected override bool Choose(SyntaxNode node, CancellationToken token) =>
@@ -256,143 +256,3 @@ public class NewDiscriminatedUnionGenerator : IncrementalGeneratorBase<Discrimin
             symbol.ToDisplayParts().SkipWhile(x => x.Kind is SymbolDisplayPartKind.Punctuation));
     }
 }
-
-
-//
-// [Generator]
-// public class DiscriminatedUnionGenerator : IIncrementalGenerator
-// {
-//     public void Initialize(IncrementalGeneratorInitializationContext context)
-//     {
-//         var provider = context
-//             .SyntaxProvider
-//             .CreateSyntaxProvider(IsDiscriminatedUnionAttr, GetUnionTypeInfo)
-//             .Where(x => x is not null)
-//             .Collect();
-//
-//         context.RegisterSourceOutput(provider, GenerateCode);
-//
-//         return;
-//
-//
-//         static bool IsDiscriminatedUnionAttr(
-//             SyntaxNode node, CancellationToken _
-//         )
-//         {
-//             if (node is not AttributeSyntax attribute)
-//             {
-//                 return false;
-//             }
-//
-//             return attribute.Name.ExtractName()
-//                 is Const.DiscriminatedUnion
-//                 or Const.DiscriminatedUnionAttribute;
-//         }
-//
-//
-//         static DiscriminatedUnionTypeInfo? GetUnionTypeInfo(
-//             GeneratorSyntaxContext syntaxContext, CancellationToken _
-//         )
-//         {
-//         }
-//
-//
-//         static ImmutableArray<UnionCaseParameterInfo> GetUnionParametersInfo(
-//             string prefix,
-//             ImmutableArray<IParameterSymbol> parameters
-//         )
-//         {
-//             var builder = ImmutableArray.CreateBuilder<UnionCaseParameterInfo>(
-//                 parameters.Length
-//             );
-//
-//             foreach (var parameter in parameters)
-//             {
-//                 var type = parameter.Type.ToDisplayString();
-//                 var name = parameter.Name;
-//                 builder.Add(new UnionCaseParameterInfo(type, name, $"{prefix}_{name}"));
-//             }
-//
-//             return builder.MoveToImmutable();
-//         }
-//
-//
-//         static UnionCaseInfo CreateUnionCaseInfo(IMethodSymbol method)
-//         {
-//             return new UnionCaseInfo(
-//                 method.Name,
-//                 method.ReturnType.ToDisplayString(),
-//                 GetUnionParametersInfo(method.Name, method.Parameters)
-//             );
-//         }
-//
-//
-//         static string? GetNamespace(ISymbol type)
-//         {
-//             return type.ContainingNamespace.IsGlobalNamespace
-//                 ? null
-//                 : type.ContainingNamespace.ToDisplayString();
-//         }
-//
-//
-//         static string GetTypeDeclarationKeywords(SyntaxNode syntax)
-//         {
-//             return string.Join(
-//                 " ",
-//                 syntax
-//                     .ChildTokens()
-//                     .TakeWhile(x => x.Kind() != SyntaxKind.IdentifierToken)
-//                     .Select(x => x.Text)
-//             );
-//         }
-//
-//         static string GetTypeNameWithParameters(ISymbol symbol)
-//         {
-//             return string.Join(
-//                 "",
-//                 symbol
-//                     .ToDisplayParts()
-//                     .SkipWhile(x =>
-//                         x.Kind
-//                             is SymbolDisplayPartKind.NamespaceName
-//                             or SymbolDisplayPartKind.Punctuation
-//                     )
-//             );
-//         }
-//
-//
-//         static string GetUniqueTypeName(
-//             ISymbol symbol
-//         )
-//         {
-//             return symbol.ToDisplayString()
-//                 .Replace('<', '[')
-//                 .Replace('>', ']');
-//         }
-//     }
-//
-//
-//     private static void GenerateCode(
-//         SourceProductionContext context,
-//         ImmutableArray<DiscriminatedUnionTypeInfo?> types
-//     )
-//     {
-//         foreach (var typeInfo in types)
-//         {
-//             if (typeInfo == null)
-//             {
-//                 continue;
-//             }
-//
-//             const string templateFile = "DiscriminatedUnion.scriban";
-//             var generated = ScribanTemplate.Render(
-//                 templateFile, new { TypeInfo = typeInfo }
-//             );
-//
-//             context.AddSource(
-//                 $"{typeInfo.UniqueName}.g.cs",
-//                 generated
-//             );
-//         }
-//     }
-// }
