@@ -11,16 +11,11 @@ Install the NuGet package `Dartk.CSharp.DiscriminatedUnions`:
 dotnet add package Dartk.CSharp.DiscriminatedUnions
 ```
 
-If you want to avoid propagating the generator package dependency, set the option `PrivateAssets="all"` in the project file. And to support runtime reflection on discriminated unions add an explicit reference to the package `Dartk.CSharp.DiscriminatedUnions.Runtime`:
+If you want to avoid propagating package dependency, set the option `PrivateAssets="all"` in the project file.
 
 ```xml
 <ItemGroup>
-    <PackageReference Include="Dartk.CSharp.DiscriminatedUnions"
-                      Version="0.1.0-alpha6"
-                      PrivateAssets="all" />
-    
-    <PackageReference Include="Dartk.CSharp.DiscriminatedUnions.Runtime"
-                      Version="0.1.0-alpha3" />
+    <PackageReference Include="Dartk.CSharp.DiscriminatedUnions" Version="0.1.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 
