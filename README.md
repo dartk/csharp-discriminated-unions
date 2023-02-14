@@ -1,17 +1,25 @@
 # CSharp.DiscriminatedUnions
 
-A [discriminated union](https://en.wikipedia.org/wiki/Tagged_union) source generator for C#. Discriminated unions represent values that can be one of a number of cases. Each case has a unique name and can store values of different types, as opposed to the standard `enum` type, that can only be of an integral numeric type.
+A [discriminated union](https://en.wikipedia.org/wiki/Tagged_union) source generator for C#.
+
+Discriminated unions represent values that can be one of a number of cases. Each case has a unique name and can store values of different types, as opposed to the standard `enum` type, that can only be of an integral numeric type.
+
+- [Installation](#installation)
+- [Declaring a Discriminated Union](#declaring-a-discriminated-union)
+- [Creating instances](#creating-instances)
+- [Case matching](#case-matching)
+  - [`Switch` methods](#switch-methods)
+  - [`switch` statement or expression](#switch-statement-or-expression)
+- [More examples](#more-examples)
 
 
 ## Installation
 
-Install the NuGet package `Dartk.CSharp.DiscriminatedUnions`:
-
 ```
-dotnet add package Dartk.CSharp.DiscriminatedUnions
+dotnet add package Dartk.CSharp.DiscriminatedUnions --version 0.1.0
 ```
 
-If you want to avoid propagating package dependency, set the option `PrivateAssets="all"` in the project file.
+Generated code does not depend on the package at runtime. Therefore, it is safe to set the option `PrivateAssets="all"` to avoid propagating the dependency on the package:
 
 ```xml
 <ItemGroup>
@@ -47,13 +55,15 @@ The code above declares a discriminated union `Shape` with three cases:
 
 ## Creating instances
 
-One of the case defining static methods are used to create an instance of the union:
+To create an instance of the discriminated union one of the case defining methods are used:
 
 ```c#
 var dot = Shape.Dot();
 var circle = Shape.Circle(5.0);
 var rectangle = Shape.Rectangle(2.0, 4.0);
 ```
+
+The generator creates bodies for the case methods that call a generated private constructor.
 
 
 ## Case matching
@@ -160,7 +170,7 @@ To save the generated code into a file during the build process, set the project
 ```xml
 <PropertyGroup>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-    <!--Generated files will be saved to 'obj\GeneratedFiles'-->
+    <!--Files will be saved in 'obj\GeneratedFiles\'-->
     <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)\GeneratedFiles </CompilerGeneratedFilesOutputPath>
 </PropertyGroup>
 ```
