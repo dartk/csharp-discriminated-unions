@@ -20,6 +20,7 @@
         <RepositoryType>git</RepositoryType>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageTags>C# functional code generation</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>
@@ -33,7 +34,6 @@
     <ItemGroup>
         <!-- Package the generator in the analyzer directory of the nuget package -->
         <None Include="$(OutputPath)/$(AssemblyName).dll" PackagePath="analyzers/dotnet/cs" Pack="true" Visible="false" />
-        <None Include="$(PkgScriban)/lib\netstandard2.0/*.dll" PackagePath="analyzers/dotnet/cs" Pack="true" Visible="false" />
         <None Include="$(PkgScriban)/lib\netstandard2.0/*.dll" PackagePath="analyzers/dotnet/cs" Pack="true" Visible="false" />
     </ItemGroup>
 
