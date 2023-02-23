@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
-        <LangVersion>10</LangVersion>
+        <LangVersion>11</LangVersion>
         <Nullable>enable</Nullable>
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
         <RootNamespace>CSharp.DiscriminatedUnions</RootNamespace>
@@ -35,11 +35,6 @@
         <!-- Package the generator in the analyzer directory of the nuget package -->
         <None Include="$(OutputPath)/$(AssemblyName).dll" PackagePath="analyzers/dotnet/cs" Pack="true" Visible="false" />
         <None Include="$(PkgScriban)/lib\netstandard2.0/*.dll" PackagePath="analyzers/dotnet/cs" Pack="true" Visible="false" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <Compile Remove="Runtime/*.cs" />
-        <None Include="Runtime/*.cs" PackagePath="ContentFiles/cs/any/" Pack="true" />
     </ItemGroup>
 
     <ItemGroup>

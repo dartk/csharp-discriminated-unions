@@ -1,7 +1,6 @@
 ﻿using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -11,74 +10,115 @@ namespace CSharp.DiscriminatedUnions;
 
 
 [Generator]
-public class NewDiscriminatedUnionGenerator : IncrementalGeneratorBase<DiscriminatedUnionTypeInfo>
+public class NewDiscriminatedUnionGenerator : IIncrementalGenerator
 {
     private const string DiscriminatedUnion = nameof(DiscriminatedUnion);
     private const string DiscriminatedUnionAttribute = nameof(DiscriminatedUnionAttribute);
     private const string CaseAttributeClass = "CSharp.DiscriminatedUnions.CaseAttribute";
 
 
-    protected override bool Choose(SyntaxNode node, CancellationToken token) =>
-        node is AttributeSyntax attribute
-        && attribute.Name.ExtractName() is DiscriminatedUnion or DiscriminatedUnionAttribute;
-
-
-    protected override DiscriminatedUnionTypeInfo? Select(GeneratorSyntaxContext context,
-        CancellationToken token)
+    public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        var attribute = (AttributeSyntax)context.Node;
-
-        if (attribute.Parent?.Parent is not TypeDeclarationSyntax typeSyntax)
+        context.RegisterPostInitializationOutput(static context =>
         {
-            return null;
-        }
+            context.AddSource("Attributes.cs", """
+                using System;
 
-        var symbol = context.SemanticModel.GetDeclaredSymbol(typeSyntax);
-        if (symbol is not ITypeSymbol typeSymbol)
+
+                namespace CSharp.DiscriminatedUnions
+                {
+                    /// <summary>
+                    /// Marks a type as a discriminated union for source generation by
+                    /// <a href="https://github.com/dartk/csharp-discriminated-unions">CSharp.DiscriminatedUnion</a>.
+                    /// </summary>
+                    /// <example>
+                    /// <code>
+                    /// [DiscriminatedUnion]
+                    /// public partial class Shape
+                    /// {
+                    ///     [Case] public static partial Shape Dot();
+                    ///     [Case] public static partial Shape Circle(double radius);
+                    ///     [Case] public static partial Shape Rectangle(double width, double length);
+                    /// }
+                    /// </code>
+                    /// </example>
+                    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
+                    internal class DiscriminatedUnionAttribute : Attribute
+                    {
+                    }
+
+
+                    /// <summary>
+                    /// Declares cases for a <see cref="DiscriminatedUnionAttribute">Discriminated Union</see>.
+                    /// </summary>
+                    [AttributeUsage(AttributeTargets.Method)]
+                    internal class CaseAttribute : Attribute
+                    {
+                    }
+                }
+                """);
+        });
+
+        var provider = context.SyntaxProvider.CreateSyntaxProvider(
+            predicate: static (node, _) => node is AttributeSyntax attribute &&
+                attribute.Name.ExtractName() is DiscriminatedUnion or DiscriminatedUnionAttribute,
+            transform: static (context, token) =>
+            {
+                var attribute = (AttributeSyntax)context.Node;
+
+                if (attribute.Parent?.Parent is not TypeDeclarationSyntax typeSyntax)
+                {
+                    return null;
+                }
+
+                var symbol = context.SemanticModel.GetDeclaredSymbol(typeSyntax, token);
+                if (symbol is not ITypeSymbol typeSymbol)
+                {
+                    return null;
+                }
+
+                var cases = GetCasesInfo(typeSymbol);
+                if (cases.IsEmpty)
+                {
+                    return null;
+                }
+
+                var overridesToString = OverridesToString(typeSymbol);
+                var (namespaces, types) = GetDeclarationInfo(typeSyntax);
+                
+                token.ThrowIfCancellationRequested();
+
+                return new DiscriminatedUnionTypeInfo(
+                    namespaces,
+                    types,
+                    typeSymbol.Name,
+                    GetTypeNameWithParameters(typeSymbol),
+                    GetUniqueTypeName(typeSymbol),
+                    cases,
+                    !overridesToString
+                );
+            }).Collect();
+
+        context.RegisterSourceOutput(provider, static (context, items) =>
         {
-            return null;
-        }
+            var scribanTemplate =
+                ScribanTemplate.Parse("ScribanTemplates", "DiscriminatedUnion.scriban");
 
-        var cases = GetCasesInfo(typeSymbol);
-        if (cases.IsEmpty)
-        {
-            return null;
-        }
+            foreach (var typeInfo in items)
+            {
+                if (typeInfo == null) continue;
+                
+                var generated = scribanTemplate.Render(
+                    new { TypeInfo = typeInfo },
+                    member => member.Name
+                );
 
-        var overridesToString = OverridesToString(typeSymbol);
-
-        var (namespaces, types) = GetDeclarationInfo(typeSyntax);
-
-        return new DiscriminatedUnionTypeInfo(
-            namespaces,
-            types,
-            typeSymbol.Name,
-            GetTypeNameWithParameters(typeSymbol),
-            GetUniqueTypeName(typeSymbol),
-            cases,
-            !overridesToString
-        );
-    }
-
-
-    protected override void Produce(SourceProductionContext context,
-        ImmutableArray<DiscriminatedUnionTypeInfo> items)
-    {
-        var scribanTemplate =
-            ScribanTemplate.Parse("ScribanTemplates", "DiscriminatedUnion.scriban");
-
-        foreach (var typeInfo in items)
-        {
-            var generated = scribanTemplate.Render(
-                new { TypeInfo = typeInfo },
-                member => member.Name
-            );
-
-            context.AddSource(
-                $"{typeInfo.UniqueName}.g.cs",
-                generated
-            );
-        }
+                context.AddSource(
+                    $"{typeInfo.UniqueName}.g.cs",
+                    generated
+                );
+            }
+        });
     }
 
 
