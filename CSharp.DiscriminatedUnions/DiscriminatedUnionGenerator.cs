@@ -4,6 +4,7 @@ using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Scriban;
 
 
 namespace CSharp.DiscriminatedUnions;
@@ -68,27 +69,27 @@ public class NewDiscriminatedUnionGenerator : IIncrementalGenerator
 
                 if (attribute.Parent?.Parent is not TypeDeclarationSyntax typeSyntax)
                 {
-                    return null;
+                    return default;
                 }
 
                 var symbol = context.SemanticModel.GetDeclaredSymbol(typeSyntax, token);
                 if (symbol is not ITypeSymbol typeSymbol)
                 {
-                    return null;
+                    return default;
                 }
 
                 var cases = GetCasesInfo(typeSymbol);
                 if (cases.IsEmpty)
                 {
-                    return null;
+                    return default;
                 }
 
                 var overridesToString = OverridesToString(typeSymbol);
                 var (namespaces, types) = GetDeclarationInfo(typeSyntax);
-                
+
                 token.ThrowIfCancellationRequested();
 
-                return new DiscriminatedUnionTypeInfo(
+                var info = new DiscriminatedUnionTypeInfo(
                     namespaces,
                     types,
                     typeSymbol.Name,
@@ -97,29 +98,23 @@ public class NewDiscriminatedUnionGenerator : IIncrementalGenerator
                     cases,
                     !overridesToString
                 );
-            }).Collect();
 
-        context.RegisterSourceOutput(provider, static (context, items) =>
+                var fileName = $"{info.UniqueName}.g.cs";
+                var text = DiscriminatedUnionTemplate.Render(info, member => member.Name);
+
+                return (fileName, text);
+            }).Where(x => !string.IsNullOrEmpty(x.text));
+
+        context.RegisterImplementationSourceOutput(provider, static (context, item) =>
         {
-            var scribanTemplate =
-                ScribanTemplate.Parse("ScribanTemplates", "DiscriminatedUnion.scriban");
-
-            foreach (var typeInfo in items)
-            {
-                if (typeInfo == null) continue;
-                
-                var generated = scribanTemplate.Render(
-                    new { TypeInfo = typeInfo },
-                    member => member.Name
-                );
-
-                context.AddSource(
-                    $"{typeInfo.UniqueName}.g.cs",
-                    generated
-                );
-            }
+            var (file, text) = item;
+            context.AddSource(file, text);
         });
     }
+
+
+    private static readonly Template DiscriminatedUnionTemplate =
+        ScribanTemplate.Parse("ScribanTemplates", "DiscriminatedUnion.scriban");
 
 
     private static bool OverridesToString(ITypeSymbol typeSymbol)

@@ -41,7 +41,7 @@ end
 
 {{- # Namespaces }}
 
-{{- for $namespace in TypeInfo.NamespaceDeclarations }}
+{{- for $namespace in NamespaceDeclarations }}
     {{- if $namespace.Declaration }}
 namespace {{ $namespace.Declaration }} {
     {{- end }}
@@ -51,7 +51,7 @@ namespace {{ $namespace.Declaration }} {
 
 {{- # Types }}
 
-{{- for $typeDeclaration in TypeInfo.TypeDeclarations }}
+{{- for $typeDeclaration in TypeDeclarations }}
 {{ $typeDeclaration.Declaration }} {
 {{- end }}
 
@@ -59,32 +59,32 @@ namespace {{ $namespace.Declaration }} {
 {{- # Member declarations begin }}
 
     public enum Enum {
-        {{- for $unionCase in TypeInfo.Cases }}
+        {{- for $unionCase in Cases }}
         {{ $unionCase.Name }},
         {{- end }}
     } 
     
     
-    {{- $constructorParameters = TypeInfo.Parameters |
+    {{- $constructorParameters = Parameters |
         array.each @(do
             ret string_format "{0} {1} = default!" $0.Type $0.FieldName
         end) |
         array.join ", " 
     }}
         
-    private {{ TypeInfo.Name }}(Enum Case, {{ $constructorParameters }}) {
+    private {{ Name }}(Enum Case, {{ $constructorParameters }}) {
         this.Case = Case;
-        {{- for $parameter in TypeInfo.Parameters }}
+        {{- for $parameter in Parameters }}
         this.{{ $parameter.FieldName }} = {{ $parameter.FieldName }};
         {{- end }}
     }
     
     public Enum Case { get; }
-{{- for $parameter in TypeInfo.Parameters }}
+{{- for $parameter in Parameters }}
     private readonly {{ $parameter.Type }} {{ $parameter.FieldName }};
 {{- end }}
     
-{{- for $unionCase in TypeInfo.Cases }}
+{{- for $unionCase in Cases }}
     {{- $inputParameters = $unionCase.Parameters |
         array.each @(do
             ret string_format "{0} {1}" $0.Type $0.Name
@@ -102,8 +102,8 @@ namespace {{ $namespace.Declaration }} {
         array.add ("Case: Enum." + $unionCase.Name) |
         array.join ", " }}
     
-    public static partial {{ TypeInfo.NameWithParameters }} {{ $unionCase.Name }}({{ $inputParameters }}) {
-        return new {{ TypeInfo.NameWithParameters }}({{ $constructorParameters }});
+    public static partial {{ NameWithParameters }} {{ $unionCase.Name }}({{ $inputParameters }}) {
+        return new {{ NameWithParameters }}({{ $constructorParameters }});
     }
     
     public bool Is{{ $unionCase.Name }} => this.Case == Enum.{{ $unionCase.Name }};
@@ -144,7 +144,7 @@ namespace {{ $namespace.Declaration }} {
 
     public TResult Switch<TResult>(
     {{-
-        TypeInfo.Cases |
+        Cases |
         array.each @(do
             if (array.size $0.Parameters) > 0
                 $parameterTypes = $0.Parameters | array.map "Type" | array.join ", "
@@ -157,7 +157,7 @@ namespace {{ $namespace.Declaration }} {
     -}}
     ) {
         switch (this.Case) {
-            {{- for _case in TypeInfo.Cases }}
+            {{- for _case in Cases }}
             {{- $fieldNames = _case.Parameters | array.map "FieldName" | array.join ", " }}
             case Enum.{{ _case.Name }}: return {{ _case.Name }}({{ $fieldNames }});
             {{- end }}
@@ -165,9 +165,9 @@ namespace {{ $namespace.Declaration }} {
         }
     }
 
-    public TResult Switch<TResult>(System.Func<{{ TypeInfo.NameWithParameters }}, TResult> Default,
+    public TResult Switch<TResult>(System.Func<{{ NameWithParameters }}, TResult> Default,
     {{-
-        TypeInfo.Cases |
+        Cases |
         array.each @(do
             if (array.size $0.Parameters) > 0
                 $parameterTypes = $0.Parameters | array.map "Type" | array.join ", "
@@ -180,7 +180,7 @@ namespace {{ $namespace.Declaration }} {
     -}}
     ) {
         switch (this.Case) {
-            {{- for _case in TypeInfo.Cases }}
+            {{- for _case in Cases }}
             {{- $fieldNames = _case.Parameters | array.map "FieldName" | array.join ", " }}
             case Enum.{{ _case.Name }}: return {{ _case.Name }} != null ? {{ _case.Name }}({{ $fieldNames }}) : Default(this);
             {{- end }}
@@ -190,7 +190,7 @@ namespace {{ $namespace.Declaration }} {
 
     public void Switch(
     {{-
-        TypeInfo.Cases |
+        Cases |
         array.each @(do
             if (array.size $0.Parameters) > 0
                 $parameterTypes = $0.Parameters | array.map "Type" | array.join ", "
@@ -203,7 +203,7 @@ namespace {{ $namespace.Declaration }} {
     -}}
     ) {
         switch (this.Case) {
-            {{- for _case in TypeInfo.Cases }}
+            {{- for _case in Cases }}
             {{- $fieldNames = _case.Parameters | array.map "FieldName" | array.join ", " }}
             case Enum.{{ _case.Name }}: {{ _case.Name }}({{ $fieldNames }}); break;
             {{- end }}
@@ -211,9 +211,9 @@ namespace {{ $namespace.Declaration }} {
         }
     }
 
-    public void Switch(System.Action<{{ TypeInfo.NameWithParameters }}> Default,
+    public void Switch(System.Action<{{ NameWithParameters }}> Default,
     {{-
-        TypeInfo.Cases |
+        Cases |
         array.each @(do
             if (array.size $0.Parameters) > 0
                 $parameterTypes = $0.Parameters | array.map "Type" | array.join ", "
@@ -226,7 +226,7 @@ namespace {{ $namespace.Declaration }} {
     -}}
     ) {
         switch (this.Case) {
-            {{- for _case in TypeInfo.Cases }}
+            {{- for _case in Cases }}
             {{- $fieldNames = _case.Parameters | array.map "FieldName" | array.join ", " }}
             case Enum.{{ _case.Name }}: if ({{ _case.Name }} != null) { {{ _case.Name }}({{ $fieldNames }}); } else { Default(this); } break;
             {{- end }}
@@ -234,11 +234,11 @@ namespace {{ $namespace.Declaration }} {
         }
     }
     
-    {{- if TypeInfo.GenerateToString }}
+    {{- if GenerateToString }}
     
     public override string ToString() {
         switch (this.Case) {
-            {{- for _case in TypeInfo.Cases }}
+            {{- for _case in Cases }}
             case Enum.{{ _case.Name }}: return $"{{ _case.Name }}({{
                 _case.Parameters |
                 array.each @(do
@@ -256,13 +256,13 @@ namespace {{ $namespace.Declaration }} {
 
 
 {{- # Braces for type declarations }}
-{{- for $type in TypeInfo.TypeDeclarations }}
+{{- for $type in TypeDeclarations }}
 }
 {{- end }}
 
 
 {{- # Braces for namespace declarations }}
-{{- for $namespace in TypeInfo.NamespaceDeclarations }}
+{{- for $namespace in NamespaceDeclarations }}
     {{- if $namespace.Declaration }}
 }
     {{- end }}
